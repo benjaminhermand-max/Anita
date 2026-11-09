@@ -668,7 +668,7 @@ VIEWS.blind=()=>{
   const sp=isSpIt();
   const cd=(on,small)=>`<div class="cd ${on?'':'paused'} ${small?'small':''}" aria-hidden="true"><span></span></div>`;
   let mid;
-  if(b.winner!==null)mid=`<div class="judge" style="--tc:var(--t${b.winner})"><span class="wn">${esc(teamName(b.winner))} !</span><p class="muted">${sp?'La musique est en pause, écoute la réponse':'Coupe la musique et écoute la réponse'}</p><div class="row"><button class="btn good" data-act="blindGood" data-arg="1">Titre +1</button><button class="btn good" data-act="blindGood" data-arg="2">Titre et artiste +2</button><button class="btn bad" data-act="blindBad">Faux −1</button></div></div>`;
+  if(b.winner!==null)mid=`<div class="judge" style="--tc:var(--t${b.winner})"><span class="wn">${esc(teamName(b.winner))} !</span><p class="muted">${sp?'La musique est en pause, écoute la réponse':'Coupe la musique et écoute la réponse'}</p><div class="row"><button class="btn good" data-act="blindGood" data-arg="1">Titre +1</button><button class="btn good" data-act="blindGood" data-arg="2">Titre et artiste +2</button><button class="btn bad" data-act="blindBad">Faux · +1 aux autres</button></div></div>`;
   else if(V.show)mid=`${cd(true,true)}<p class="answer">${esc(it.t)}</p><p class="muted">${esc(it.a)}</p><button class="btn" data-act="blindNext">${V.n<5?'Extrait suivant':'Fin de la manche'}</button>`;
   else if(!b.armed)mid=`${cd(false)}<p class="muted" style="max-width:40ch">${sp?'Extrait n°'+V.n+' : un titre de la playlist part au hasard sur Spotify dès que tu touches le bouton.':'Prépare l\'extrait n°'+V.n+' sur ton téléphone, puis lance la musique et touche le bouton en même temps.'}</p><button class="btn big" data-act="blindArm">C'est parti !</button>`;
   else mid=`${cd(true)}<p class="qbig">Buzzez !</p><button class="ghost" data-act="blindReveal">Personne ne trouve, révéler</button>`;
@@ -766,7 +766,7 @@ const ACT={
 
  blindArm:()=>{keepAwake();if(isSpIt())spPlay(V.it);V.bz.armed=true;tone(880,.1,'sine');render();},
  blindGood:a=>{const w=V.bz.winner,n=Number(a);addPts(w,n,'Blind test');sGood();react('joie');if(isSpIt())spResume();V.show=true;V.bz.armed=false;V.bz.winner=null;render();},
- blindBad:()=>{const w=V.bz.winner;addPts(w,-1,'Blind test · erreur');toast(teamName(w)+' −1');if(wrong()===0){V.show=true;V.bz.armed=false;}if(isSpIt())spResume();react('oups');render();},
+ blindBad:()=>{const w=V.bz.winner;[0,1,2,3].filter(t=>t!==w).forEach(t=>addPts(t,1,'Blind test · erreur adverse'));sBad();toast('Les 3 autres équipes +1');if(isSpIt())spResume();V.show=true;V.bz.armed=false;V.bz.winner=null;react('oups');render();},
  blindReveal:()=>{if(isSpIt())spResume();V.show=true;V.bz.armed=false;V.bz.winner=null;render();},
  blindNext:()=>{if(V.n>=5){if(isSpIt())spPause();V.done=true;render();return;}if(isSpIt())spPause();V.it=pickBlind();V.n++;V.show=false;V.bz=newBz(false);render();},
  blindAgain:()=>startBlind(),
