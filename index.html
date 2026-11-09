@@ -766,7 +766,7 @@ const ACT={
 
  blindArm:()=>{keepAwake();if(isSpIt())spPlay(V.it);V.bz.armed=true;tone(880,.1,'sine');render();},
  blindGood:a=>{const w=V.bz.winner,n=Number(a);addPts(w,n,'Blind test');sGood();react('joie');if(isSpIt())spResume();V.show=true;V.bz.armed=false;V.bz.winner=null;render();},
- blindBad:()=>{const w=V.bz.winner;[0,1,2,3].filter(t=>t!==w).forEach(t=>addPts(t,1,'Blind test · erreur adverse'));sBad();toast('Les 3 autres équipes +1');if(isSpIt())spResume();V.show=true;V.bz.armed=false;V.bz.winner=null;react('oups');render();},
+ blindBad:()=>{const w=V.bz.winner;[0,1,2,3].filter(t=>t!==w).forEach(t=>addPts(t,1,'Blind test · erreur adverse'));toast('Les 3 autres équipes +1');react('oups');if(wrong()===0){V.show=true;V.bz.armed=false;}if(isSpIt())spResume();render();},
  blindReveal:()=>{if(isSpIt())spResume();V.show=true;V.bz.armed=false;V.bz.winner=null;render();},
  blindNext:()=>{if(V.n>=5){if(isSpIt())spPause();V.done=true;render();return;}if(isSpIt())spPause();V.it=pickBlind();V.n++;V.show=false;V.bz=newBz(false);render();},
  blindAgain:()=>startBlind(),
