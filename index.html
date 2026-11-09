@@ -185,6 +185,8 @@ textarea{min-height:180px;font-size:15px;line-height:1.5;resize:vertical}
 .cd.paused{animation-play-state:paused}
 .cd.small{width:min(16vmin,110px)}
 @keyframes spin{to{transform:rotate(360deg)}}
+.bt-time{font-family:var(--fd);font-weight:800;font-size:34px;line-height:1;color:var(--gold);font-variant-numeric:tabular-nums}
+.bt-time.low{color:#FF8FA3}
 .sp-line{font-size:13px;font-weight:700;color:#B7AEDD;max-width:46ch}
 .sp-line.err{color:#FF8FA3}
 /* Réaction de la mascotte */
@@ -439,8 +441,8 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 let view='home',V={};
 const BUZZ_VIEWS=['duel-play','blind','photo'];
 function hist(v){try{const cur=history.state&&history.state.v;if(v==='home'){if(cur&&cur!=='home')history.replaceState({v:'home'},'');}else if(!cur||cur==='home')history.pushState({v:v},'');else history.replaceState({v:v},'');}catch(e){}}
-addEventListener('popstate',()=>{if(view!=='home'){if(view==='blind'&&isSpIt())spPause();clearInterval(V&&V.tick);view='home';V={};render();try{window.scrollTo(0,0);}catch(e){}}});
-function go(v,init){if(view==='blind'&&v!=='blind'&&isSpIt())spPause();hist(v);view=v;V=init||{};render();try{window.scrollTo(0,0);}catch(e){}}
+addEventListener('popstate',()=>{if(view!=='home'){if(view==='blind'){clearInterval(V.clk);if(isSpIt())spPause();}clearInterval(V&&V.tick);view='home';V={};render();try{window.scrollTo(0,0);}catch(e){}}});
+function go(v,init){if(view==='blind'){clearInterval(V.clk);if(v!=='blind'&&isSpIt())spPause();}hist(v);view=v;V=init||{};render();try{window.scrollTo(0,0);}catch(e){}}
 function render(){
   const isBz=BUZZ_VIEWS.includes(view);
   $('#bz').hidden=!isBz;$('#app').hidden=isBz;
@@ -657,10 +659,18 @@ function zones(mode,teams){
     if(b.winner===t)c.push('win');else if(lk)c.push('locked');else if(b.winner!==null)c.push('dim');else if(b.armed)c.push('armed');
     return `<div class="zone ${c.join(' ')}" data-buzz="${t}" style="--tc:var(--t${t})"><span>${esc(teamName(t))}<small>${lk?'Bloquée':b.armed&&b.winner===null?'Buzz !':''}</small></span></div>`;}).join('');
 }
-function onBuzz(t){const b=V.bz;if(!b||!b.armed||b.winner!==null||b.locked.includes(t))return;if(!(V.teams||[0,1,2,3]).includes(t))return;b.winner=t;if(view==='blind'&&isSpIt())spPause();sBuzz(t);react('surprise');render();}
+function onBuzz(t){const b=V.bz;if(!b||!b.armed||b.winner!==null||b.locked.includes(t))return;if(!(V.teams||[0,1,2,3]).includes(t))return;b.winner=t;if(view==='blind'){clkStop();if(isSpIt()&&!V.ended)spPause();}sBuzz(t);react('surprise');render();}
 function wrong(){const b=V.bz;sBad();b.locked.push(b.winner);b.winner=null;const left=(V.teams||[0,1,2,3]).filter(t=>!b.locked.includes(t));return left.length;}
 
 /* Blind test */
+const EXTRAIT_MS=20000;
+function clkLeft(){return Math.max(0,(V.left||0)-(V.runAt?Date.now()-V.runAt:0));}
+function clkStop(){if(V.runAt){V.left=clkLeft();V.runAt=null;}clearInterval(V.clk);V.clk=null;}
+function clkStart(){if(V.ended||V.runAt)return;V.runAt=Date.now();const me=V;clearInterval(V.clk);
+  V.clk=setInterval(()=>{if(V!==me||view!=='blind'){clearInterval(me.clk);return;}const l=clkLeft();const el=document.getElementById('bt-time');
+    if(el){el.textContent=Math.ceil(l/1000)+' s';el.classList.toggle('low',l<=5000);}
+    if(l<=0){clkStop();V.left=0;V.ended=true;if(isSpIt())spPause();tone(330,.4,'sawtooth');render();}},200);}
+
 VIEWS.blind=()=>{
   const b=V.bz,it=V.it;
   if(!it)return zones(4,[0,1,2,3])+`<div class="bcenter c4"><p class="qbig">Aucune chanson</p><p class="muted">Ajoute des chansons dans Préparer.</p><button class="ghost" data-act="go" data-arg="prep">Préparer</button></div><button class="ghost quit" data-act="go" data-arg="home">Quitter</button>`;
@@ -671,7 +681,8 @@ VIEWS.blind=()=>{
   if(b.winner!==null)mid=`<div class="judge" style="--tc:var(--t${b.winner})"><span class="wn">${esc(teamName(b.winner))} !</span><p class="muted">${sp?'La musique est en pause, écoute la réponse':'Coupe la musique et écoute la réponse'}</p><div class="row"><button class="btn good" data-act="blindGood" data-arg="1">Titre +1</button><button class="btn good" data-act="blindGood" data-arg="2">Titre et artiste +2</button><button class="btn bad" data-act="blindBad">Faux · +1 aux autres</button></div></div>`;
   else if(V.show)mid=`${cd(true,true)}<p class="answer">${esc(it.t)}</p><p class="muted">${esc(it.a)}</p><button class="btn" data-act="blindNext">${V.n<5?'Extrait suivant':'Fin de la manche'}</button>`;
   else if(!b.armed)mid=`${cd(false)}<p class="muted" style="max-width:40ch">${sp?'Extrait n°'+V.n+' : un titre de la playlist part au hasard sur Spotify dès que tu touches le bouton.':'Prépare l\'extrait n°'+V.n+' sur ton téléphone, puis lance la musique et touche le bouton en même temps.'}</p><button class="btn big" data-act="blindArm">C'est parti !</button>`;
-  else mid=`${cd(true)}<p class="qbig">Buzzez !</p><button class="ghost" data-act="blindReveal">Personne ne trouve, révéler</button>`;
+  else if(V.ended)mid=`${cd(false)}<p class="qbig">Extrait terminé</p><p class="muted">Vous pouvez encore buzzer.</p><button class="ghost" data-act="blindReveal">Personne ne trouve, révéler</button>`;
+  else mid=`${cd(true)}<p class="qbig">Buzzez !</p><p class="bt-time ${clkLeft()<=5000?'low':''}" id="bt-time">${Math.ceil(clkLeft()/1000)} s</p><button class="ghost" data-act="blindReveal">Personne ne trouve, révéler</button>`;
   const spLine=spConnected()?`<p class="sp-line ${V.spErr?'err':''}">${esc(V.spMsg||(sp?'Spotify prêt · '+(SP.deviceName||'appareil actif'):'Spotify connecté mais playlist non chargée : mode manuel'))}</p>`:'';
   return zones(4,[0,1,2,3])+`<div class="bcenter c4"><span class="pill">Blind test · extrait ${V.n} / 5</span>${mid}${spLine}${miniScores()}${b.armed&&!V.show&&b.winner===null?'':`<button class="ghost" data-act="blindReveal" ${V.show?'hidden':''}>Voir la réponse</button>`}</div><button class="ghost quit" data-act="go" data-arg="home">Quitter</button>`;
 };
@@ -764,11 +775,11 @@ const ACT={
  duelNext:()=>{if(V.n>=5){V.done=true;V.bz=newBz(false);const [A,B]=V.teams;if(V.pts[0]!==V.pts[1]){const w=V.pts[0]>V.pts[1]?A:B;addPts(w,2,'Bonus vainqueur du duel');sFanfare();}render();return;}V.it=pick('duel',duelItems());V.n++;V.show=false;V.bz=newBz(true);render();},
  duelAgain:()=>go('duel',{sel:V.teams.slice()}),
 
- blindArm:()=>{keepAwake();if(isSpIt())spPlay(V.it);V.bz.armed=true;tone(880,.1,'sine');render();},
- blindGood:a=>{const w=V.bz.winner,n=Number(a);addPts(w,n,'Blind test');sGood();react('joie');if(isSpIt())spResume();V.show=true;V.bz.armed=false;V.bz.winner=null;render();},
- blindBad:()=>{const w=V.bz.winner;[0,1,2,3].filter(t=>t!==w).forEach(t=>addPts(t,1,'Blind test · erreur adverse'));toast('Les 3 autres équipes +1');react('oups');if(wrong()===0){V.show=true;V.bz.armed=false;}if(isSpIt())spResume();render();},
- blindReveal:()=>{if(isSpIt())spResume();V.show=true;V.bz.armed=false;V.bz.winner=null;render();},
- blindNext:()=>{if(V.n>=5){if(isSpIt())spPause();V.done=true;render();return;}if(isSpIt())spPause();V.it=pickBlind();V.n++;V.show=false;V.bz=newBz(false);render();},
+ blindArm:()=>{keepAwake();if(isSpIt())spPlay(V.it);V.bz.armed=true;V.left=EXTRAIT_MS;V.ended=false;clkStart();tone(880,.1,'sine');render();},
+ blindGood:a=>{const w=V.bz.winner,n=Number(a);clkStop();V.ended=true;addPts(w,n,'Blind test');sGood();react('joie');if(isSpIt())spResume();V.show=true;V.bz.armed=false;V.bz.winner=null;render();},
+ blindBad:()=>{const w=V.bz.winner;[0,1,2,3].filter(t=>t!==w).forEach(t=>addPts(t,1,'Blind test · erreur adverse'));toast('Les 3 autres équipes +1');react('oups');if(wrong()===0){clkStop();V.ended=true;V.show=true;V.bz.armed=false;if(isSpIt())spResume();}else if(!V.ended){if(isSpIt())spResume();clkStart();}render();},
+ blindReveal:()=>{clkStop();V.ended=true;if(isSpIt())spResume();V.show=true;V.bz.armed=false;V.bz.winner=null;render();},
+ blindNext:()=>{clkStop();if(V.n>=5){if(isSpIt())spPause();V.done=true;render();return;}if(isSpIt())spPause();V.it=pickBlind();V.n++;V.show=false;V.ended=false;V.left=EXTRAIT_MS;V.bz=newBz(false);render();},
  blindAgain:()=>startBlind(),
 
  photoZoom:()=>{if(V.z<ZMAX)V.z++;tone(440+V.z*120,.12,'sine');render();},
