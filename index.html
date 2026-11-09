@@ -806,7 +806,7 @@ const ACT={
  finConfetti:()=>{confetti();sFanfare();}
 };
 function startBlind(){const it=pickBlind();keepAwake();go('blind',{it,n:1,bz:newBz(false)});}
-function startPhoto(){let it;if(!(S.used.photo||[]).includes('demo-0')){it=DEMO[0];S.used.photo=(S.used.photo||[]).concat('demo-0');save();}else it=pick('photo',gamePhotos());keepAwake();go('photo',{it,n:1,z:0,bz:newBz(true)});}
+function startPhoto(){const it=pick('photo',gamePhotos());keepAwake();go('photo',{it,n:1,z:0,bz:newBz(true)});}
 
 /* ---------- Événements ---------- */
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(el&&!el.disabled){ac();const f=ACT[el.dataset.act];if(f)f(el.dataset.arg,el,e);return;}
