@@ -529,16 +529,24 @@ async function spStart(tr,pos){
     await spApi('/me/player/play?device_id='+encodeURIComponent(d.id),{method:'PUT',body});
   }
 }
+async function spState(){try{return await spApi('/me/player');}catch(e){return null;}}
+function spDiagText(st){if(!st)return 'Spotify ne renvoie aucun état de lecture (aucun appareil actif)';
+  return 'Spotify indique : appareil « '+((st.device&&st.device.name)||'?')+' »'+(st.device&&st.device.is_restricted?' (non pilotable)':'')+', lecture '+(st.is_playing?'oui':'non')+', titre « '+((st.item&&st.item.name)||'aucun')+' »'+(st.actions&&st.actions.disallows&&Object.keys(st.actions.disallows).length?', bloqué : '+Object.keys(st.actions.disallows).join(', '):'');}
 async function spPlay(tr){
   const pos=Math.floor((tr.d||180000)*(0.25+Math.random()*0.3));
   spStatus('Lancement sur Spotify…');
   try{await spStart(tr,pos);}
   catch(e){spErr(e);spStatus('Spotify : '+(e.reason==='PREMIUM_REQUIRED'?'compte Premium requis':e.message),true);return false;}
-  await new Promise(r=>setTimeout(r,1500));
-  try{const st=await spApi('/me/player');
-    if(st&&st.is_playing)spStatus('♪ En lecture sur '+((st.device&&st.device.name)||SP.deviceName||'Spotify'));
-    else spStatus('Spotify a reçu l\'ordre mais ne joue pas : ouvre l\'appli Spotify sur le téléphone',true);}
-  catch(e){}
+  let st=null;
+  for(let i=0;i<5;i++){await new Promise(r=>setTimeout(r,700));st=await spState();if(st&&st.is_playing&&st.item&&st.item.uri===tr.raw)break;}
+  if(!(st&&st.is_playing)){
+    try{await spApi('/me/player/play'+devQ(),{method:'PUT'});}catch(e){}
+    await new Promise(r=>setTimeout(r,1200));st=await spState();
+    if(!(st&&st.is_playing)){try{await spApi('/me/player/play',{method:'PUT',body:JSON.stringify({uris:[tr.raw],position_ms:pos})});}catch(e){}
+      await new Promise(r=>setTimeout(r,1500));st=await spState();}
+  }
+  if(st&&st.is_playing)spStatus('♪ En lecture sur '+((st.device&&st.device.name)||'Spotify'));
+  else spStatus('Pas de son. '+spDiagText(st),true);
   return true;
 }
 async function spPause(){try{await spApi('/me/player/pause'+devQ(),{method:'PUT'});}catch(e){}}
@@ -547,7 +555,7 @@ const isSpIt=()=>!!(V&&V.it&&V.it.d);
 function pickBlind(){return spReady()?pick('blindsp',SP_TRACKS):pick('blind',blindItems());}
 function spPrepCard(){
   if(!spOk())return `<div class="card stack"><h3>Spotify pour le blind test</h3><p class="muted">Disponible uniquement sur la version GitHub de l'appli (adresse en https://…github.io). Ici, le blind test se joue avec la musique lancée à la main.</p></div>`;
-  const devs=V.devs?`<div class="row">${V.devs.length?V.devs.map(d=>`<button class="ghost" style="${SP.deviceId===d.id?'background:var(--gold)':''}" data-act="spDev" data-arg="${esc(d.id)}">${esc(d.name)}${d.is_active?' · actif':''}</button>`).join(''):'<span class="muted">Aucun appareil trouvé : ouvre Spotify sur le téléphone et lance un titre.</span>'}</div>`:'';
+  const devs=V.devs?`<div class="row">${V.devs.length?V.devs.map(d=>`<button class="ghost" style="${SP.deviceId===d.id?'background:var(--gold)':''}" data-act="spDev" data-arg="${esc(d.id)}">${esc(d.name)}${d.is_active?' · actif':''}${d.is_restricted?' · non pilotable':''}</button>`).join(''):'<span class="muted">Aucun appareil trouvé : ouvre Spotify sur le téléphone et lance un titre.</span>'}</div>`:'';
   const st=!spConnected()?'Pas encore connecté.':spLoading?'Chargement de la playlist…':SP_TRACKS?`${SP_TRACKS.length} titres prêts · appareil : ${esc(SP.deviceName||'celui qui joue en ce moment')}`:'Connecté. Colle le lien de la playlist puis touche Charger la playlist.';
   return `<div class="card stack"><h3>Spotify pour le blind test</h3>
   <p class="muted">Avec un compte Premium, l'appli lance un titre au hasard de la playlist, coupe la musique dès qu'une équipe buzze et affiche la réponse toute seule.</p>
@@ -555,7 +563,7 @@ function spPrepCard(){
   <label class="f">Lien de la playlist<input type="text" id="sp-pl" data-input="sp" data-arg="playlist" value="${esc(SP.playlist||'')}" placeholder="https://open.spotify.com/playlist/…"></label></div>
   <p class="hint">Adresse de retour à déclarer dans l'appli Spotify (Redirect URI) : <b style="user-select:all">${esc(SP_REDIR())}</b></p>
   <div class="row">${spConnected()?`<button class="ghost" data-act="spReload">Charger la playlist</button><button class="ghost" data-act="spDevs">Choisir l'appareil</button><button class="ghost" data-act="spTest">Tester le son</button><button class="ghost" data-act="spOut">Déconnecter</button>`:`<button class="btn" data-act="spLogin">Se connecter à Spotify</button>`}</div>
-  ${devs}<p><b>${st}</b></p></div>`;
+  ${devs}<p><b>${st}</b></p>${V.spDiag?`<p style="font-size:15px">${esc(V.spDiag)}</p>`:''}</div>`;
 }
 
 /* ---------- Vues ---------- */
@@ -787,7 +795,7 @@ const ACT={
  spReload:()=>{if(!spPid()){toast('Colle le lien de la playlist');return;}spLoadTracks();},
  spDevs:async()=>{try{V.devs=await spApi('/me/player/devices').then(j=>(j&&j.devices)||[]);}catch(e){spErr(e);V.devs=[];}render();},
  spDev:a=>{const d=(V.devs||[]).find(x=>x.id===a);SP.deviceId=a;SP.deviceName=d?d.name:'';spSave();render();toast('Musique sur : '+(SP.deviceName||'appareil choisi'));},
- spTest:async()=>{if(!spReady()){toast('Charge d\'abord la playlist');return;}const tr=SP_TRACKS[Math.floor(Math.random()*SP_TRACKS.length)];toast('Test : '+tr.t);try{await spStart(tr,30000);toast('Le son doit sortir sur '+(SP.deviceName||'l\'appareil'));setTimeout(()=>spPause(),8000);}catch(e){spErr(e);}render();},
+ spTest:async()=>{if(!spReady()){toast('Charge d\'abord la playlist');return;}const tr=SP_TRACKS[Math.floor(Math.random()*SP_TRACKS.length)];toast('Test : '+tr.t);V.spDiag='Test en cours…';render();try{await spStart(tr,30000);await new Promise(r=>setTimeout(r,2500));const st=await spState();V.spDiag=spDiagText(st)+(st&&st.is_playing?' ✓':' ✗');setTimeout(()=>spPause(),8000);}catch(e){spErr(e);V.spDiag='Erreur : '+e.message;}render();},
  spOut:()=>{SP.access=SP.refresh=null;SP_TRACKS=null;spSave();render();},
  kahootAdd:()=>{const ids=[1,2,3].map(r=>$('#k'+r).value);if(ids.some(v=>v==='')){toast('Choisis les trois places');return;}if(new Set(ids).size<3){toast('Trois joueurs différents, s\'il te plaît');return;}
    ids.forEach((v,k)=>addPts(S.team[Number(v)],3-k,'Kahoot · '+pname(Number(v))));sGood();toast('Points du Kahoot ajoutés');go('home');},
