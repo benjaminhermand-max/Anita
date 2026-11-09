@@ -429,8 +429,8 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 let view='home',V={};
 const BUZZ_VIEWS=['duel-play','blind','photo'];
 function hist(v){try{const cur=history.state&&history.state.v;if(v==='home'){if(cur&&cur!=='home')history.replaceState({v:'home'},'');}else if(!cur||cur==='home')history.pushState({v:v},'');else history.replaceState({v:v},'');}catch(e){}}
-addEventListener('popstate',()=>{if(view!=='home'){clearInterval(V&&V.tick);view='home';V={};render();try{window.scrollTo(0,0);}catch(e){}}});
-function go(v,init){hist(v);view=v;V=init||{};render();try{window.scrollTo(0,0);}catch(e){}}
+addEventListener('popstate',()=>{if(view!=='home'){if(view==='blind'&&isSpIt())spPause();clearInterval(V&&V.tick);view='home';V={};render();try{window.scrollTo(0,0);}catch(e){}}});
+function go(v,init){if(view==='blind'&&v!=='blind'&&isSpIt())spPause();hist(v);view=v;V=init||{};render();try{window.scrollTo(0,0);}catch(e){}}
 function render(){
   const isBz=BUZZ_VIEWS.includes(view);
   $('#bz').hidden=!isBz;$('#app').hidden=isBz;
@@ -440,11 +440,93 @@ function render(){
 const back=(label='Accueil')=>`<button class="ghost" data-act="go" data-arg="home">← ${label}</button>`;
 const miniScores=()=>`<div class="mini">${[0,1,2,3].map(t=>`<b style="--tc:var(--t${t})">${S.scores[t]}</b>`).join('')}</div>`;
 
+/* ---------- Spotify (blind test, version GitHub) ---------- */
+const SP_KEY='anitaParty_spotify';
+let SP=(()=>{try{return JSON.parse(localStorage.getItem(SP_KEY))||{};}catch(e){return {};}})();
+function spSave(){try{localStorage.setItem(SP_KEY,JSON.stringify(SP));}catch(e){}}
+let SP_TRACKS=null,spLoading=false;
+const SP_REDIR=()=>location.origin+location.pathname;
+const spOk=()=>/^https:/.test(location.protocol)&&!!(window.crypto&&crypto.subtle);
+const spConnected=()=>!!(SP.refresh&&SP.clientId);
+const spReady=()=>spConnected()&&!!(SP_TRACKS&&SP_TRACKS.length);
+const b64url=buf=>btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+function spPid(){const p=String(SP.playlist||'').trim();const m=p.match(/playlist[\/:]([A-Za-z0-9]+)/);return m?m[1]:(/^[A-Za-z0-9]{10,}$/.test(p)?p:'');}
+async function spLogin(){
+  if(!spOk()){toast('Spotify ne marche que sur la version GitHub de l\'appli');return;}
+  if(!SP.clientId){toast('Colle d\'abord l\'identifiant Client ID');return;}
+  const v=b64url(crypto.getRandomValues(new Uint8Array(48)));
+  try{localStorage.setItem('anitaParty_pkce',v);}catch(e){}
+  const ch=b64url(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)));
+  const p=new URLSearchParams({client_id:SP.clientId,response_type:'code',redirect_uri:SP_REDIR(),code_challenge_method:'S256',code_challenge:ch,
+    scope:'user-modify-playback-state user-read-playback-state playlist-read-private playlist-read-collaborative'});
+  location.href='https://accounts.spotify.com/authorize?'+p.toString();
+}
+async function spToken(body){
+  const r=await fetch('https://accounts.spotify.com/api/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(body)});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.error_description||j.error||('connexion '+r.status));
+  SP.access=j.access_token;if(j.refresh_token)SP.refresh=j.refresh_token;SP.exp=Date.now()+((j.expires_in||3600)-60)*1000;spSave();
+}
+async function spCallback(){
+  const q=new URLSearchParams(location.search);const code=q.get('code'),err=q.get('error');
+  if(!code&&!err)return false;
+  try{history.replaceState(history.state,'',SP_REDIR());}catch(e){}
+  if(err){toast('Connexion Spotify annulée');return false;}
+  try{await spToken({client_id:SP.clientId,grant_type:'authorization_code',code,redirect_uri:SP_REDIR(),code_verifier:localStorage.getItem('anitaParty_pkce')||''});toast('Spotify connecté');return true;}
+  catch(e){toast('Spotify : '+e.message);return false;}
+}
+async function spApi(path,opt){
+  opt=opt||{};
+  if(!SP.access||Date.now()>(SP.exp||0))await spToken({client_id:SP.clientId,grant_type:'refresh_token',refresh_token:SP.refresh});
+  const r=await fetch('https://api.spotify.com/v1'+path,Object.assign({},opt,{headers:{'Authorization':'Bearer '+SP.access,'Content-Type':'application/json'}}));
+  if(r.status===204||r.status===202)return null;
+  let j=null;try{j=await r.json();}catch(e){}
+  if(!r.ok){const e=new Error((j&&j.error&&(j.error.message||j.error.reason))||('erreur '+r.status));e.status=r.status;e.reason=j&&j.error&&j.error.reason;throw e;}
+  return j;
+}
+async function spLoadTracks(){
+  const id=spPid();if(!id||!spConnected())return;
+  spLoading=true;if(view==='prep')render();
+  const grab=async base=>{let url=base+'?limit=100';const out=[];
+    while(url){const j=await spApi(url);(j.items||[]).forEach(it=>{const t=it.track||it.item;if(t&&t.uri&&!t.is_local&&String(t.uri).startsWith('spotify:track'))out.push({raw:t.uri,t:t.name,a:(t.artists||[]).map(x=>x.name).join(', '),d:t.duration_ms||180000});});
+      url=j.next?j.next.replace('https://api.spotify.com/v1',''):null;}
+    return out;};
+  try{let out;try{out=await grab('/playlists/'+id+'/tracks');}catch(e){if(e.status===403||e.status===404)out=await grab('/playlists/'+id+'/items');else throw e;}
+    SP_TRACKS=out;toast(out.length+' titres chargés depuis Spotify');}
+  catch(e){SP_TRACKS=null;toast('Playlist Spotify : '+e.message);}
+  spLoading=false;if(view==='prep'||view==='home')render();
+}
+const devQ=()=>SP.deviceId?'?device_id='+encodeURIComponent(SP.deviceId):'';
+function spErr(e){
+  if(e.reason==='NO_ACTIVE_DEVICE'||e.status===404)toast('Spotify : ouvre Spotify sur le téléphone, puis choisis l\'appareil dans Préparer');
+  else if(e.reason==='PREMIUM_REQUIRED')toast('Spotify : il faut un compte Premium');
+  else toast('Spotify : '+e.message);
+}
+async function spPlay(tr){const pos=Math.floor((tr.d||180000)*(0.25+Math.random()*0.3));
+  try{await spApi('/me/player/shuffle?state=false'+(SP.deviceId?'&device_id='+encodeURIComponent(SP.deviceId):''),{method:'PUT'}).catch(()=>{});
+      await spApi('/me/player/play'+devQ(),{method:'PUT',body:JSON.stringify({uris:[tr.raw],position_ms:pos})});}catch(e){spErr(e);}}
+async function spPause(){try{await spApi('/me/player/pause'+devQ(),{method:'PUT'});}catch(e){}}
+async function spResume(){try{await spApi('/me/player/play'+devQ(),{method:'PUT'});}catch(e){}}
+const isSpIt=()=>!!(V&&V.it&&V.it.d);
+function pickBlind(){return spReady()?pick('blindsp',SP_TRACKS):pick('blind',blindItems());}
+function spPrepCard(){
+  if(!spOk())return `<div class="card stack"><h3>Spotify pour le blind test</h3><p class="muted">Disponible uniquement sur la version GitHub de l'appli (adresse en https://…github.io). Ici, le blind test se joue avec la musique lancée à la main.</p></div>`;
+  const devs=V.devs?`<div class="row">${V.devs.length?V.devs.map(d=>`<button class="ghost" style="${SP.deviceId===d.id?'background:var(--gold)':''}" data-act="spDev" data-arg="${esc(d.id)}">${esc(d.name)}${d.is_active?' · actif':''}</button>`).join(''):'<span class="muted">Aucun appareil trouvé : ouvre Spotify sur le téléphone et lance un titre.</span>'}</div>`:'';
+  const st=!spConnected()?'Pas encore connecté.':spLoading?'Chargement de la playlist…':SP_TRACKS?`${SP_TRACKS.length} titres prêts · appareil : ${esc(SP.deviceName||'celui qui joue en ce moment')}`:'Connecté. Colle le lien de la playlist puis touche Charger la playlist.';
+  return `<div class="card stack"><h3>Spotify pour le blind test</h3>
+  <p class="muted">Avec un compte Premium, l'appli lance un titre au hasard de la playlist, coupe la musique dès qu'une équipe buzze et affiche la réponse toute seule.</p>
+  <div class="cols2"><label class="f">Identifiant de l'appli Spotify (Client ID)<input type="text" id="sp-cid" data-input="sp" data-arg="clientId" value="${esc(SP.clientId||'')}" autocomplete="off"></label>
+  <label class="f">Lien de la playlist<input type="text" id="sp-pl" data-input="sp" data-arg="playlist" value="${esc(SP.playlist||'')}" placeholder="https://open.spotify.com/playlist/…"></label></div>
+  <p class="hint">Adresse de retour à déclarer dans l'appli Spotify (Redirect URI) : <b style="user-select:all">${esc(SP_REDIR())}</b></p>
+  <div class="row">${spConnected()?`<button class="ghost" data-act="spReload">Charger la playlist</button><button class="ghost" data-act="spDevs">Choisir l'appareil</button><button class="ghost" data-act="spOut">Déconnecter</button>`:`<button class="btn" data-act="spLogin">Se connecter à Spotify</button>`}</div>
+  ${devs}<p><b>${st}</b></p></div>`;
+}
+
 /* ---------- Vues ---------- */
 const GAMES=[
  {id:'plus',tint:'#FFDCE3',m:'pointe',name:'Qui est le plus…',glyph:'?',desc:'Chacun vote en secret, puis on révèle le podium.',who:'Les 12',left:()=>remaining('plus',lines('plus'))+' questions'},
  {id:'duel',tint:'#CFF5E9',m:'boxe',name:'Le Duel',glyph:'VS',desc:'Face à face au buzzer, un champion par équipe.',who:'2 champions',left:()=>remaining('duel',duelItems())+' questions'},
- {id:'blind',tint:'#E3DEFF',m:'casque',name:'Blind test',glyph:'♪',desc:'Un buzzer par équipe, aux 4 coins de la tablette.',who:'4 équipes',left:()=>remaining('blind',blindItems())+' extraits'},
+ {id:'blind',tint:'#E3DEFF',m:'casque',name:'Blind test',glyph:'♪',desc:'Un buzzer par équipe, aux 4 coins de la tablette.',who:'4 équipes',left:()=>spReady()?remaining('blindsp',SP_TRACKS)+' titres Spotify':remaining('blind',blindItems())+' extraits'},
  {id:'photo',tint:'#FFEDB8',m:'loupe',name:'Anita ou pas Anita ?',glyph:'◎',desc:'Zoom sur un détail. Anita, ou une vache ?',who:'4 équipes',left:()=>remaining('photo',gamePhotos())+' photos'},
  {id:'taupe',tint:'#EFE4D2',m:'taupe',name:'La Taupe',glyph:'?!',desc:'Tout le monde a le même mot, sauf un.',who:'Les 12',left:()=>remaining('taupe',lines('taupe'))+' mots'},
  {id:'kahoot',tint:'#FFDCE3',m:'joie',name:'Kahoot',glyph:'K',desc:'Chacun sur son téléphone, puis on reporte les points.',who:'Les 12',left:()=>'Podium → points'}
@@ -476,7 +558,7 @@ VIEWS.prep=()=>{
   const ta=(k,title,hint)=>`<label class="f">${title}<span class="hint">${hint}</span><textarea id="ta-${k}" data-input="content" data-arg="${k}">${esc(S.content[k])}</textarea></label>`;
   return `<div class="bar">${back()}<button class="ghost" data-act="resetUsed">Rejouer toutes les questions</button></div>
   <div class="stack"><h2>Préparer le contenu</h2><p class="muted">Tout est enregistré sur cette tablette au fur et à mesure. Le contenu actuel est un exemple à remplacer.</p>
-  <div class="cols2">${ta('plus','Qui est le plus…','Une question par ligne.')}${ta('duel','Le Duel','Une ligne par question, au format Catégorie | Question | Réponse')}
+  ${spPrepCard()}<div class="cols2">${ta('plus','Qui est le plus…','Une question par ligne.')}${ta('duel','Le Duel','Une ligne par question, au format Catégorie | Question | Réponse')}
   ${ta('blind','Blind test','Une ligne par chanson, au format Titre — Artiste. La musique se lance depuis ton téléphone sur l\'enceinte.')}${ta('taupe','La Taupe','Un mot par ligne. La Taupe ne reçoit pas le mot.')}</div>
   <h3>Anita ou pas Anita ?</h3><p class="muted">Ajoute les photos d'Anita et les leurres. Touche une photo pour choisir le détail de départ du zoom (le rond jaune). Les 20 photos déjà intégrées restent dans le jeu, celles ajoutées ici s'y ajoutent.</p>
   <label class="btn file" for="phin">+ Ajouter des photos<input id="phin" type="file" accept="image/*" multiple data-change="addPhotos"></label>
@@ -529,7 +611,7 @@ function zones(mode,teams){
     if(b.winner===t)c.push('win');else if(lk)c.push('locked');else if(b.winner!==null)c.push('dim');else if(b.armed)c.push('armed');
     return `<div class="zone ${c.join(' ')}" data-buzz="${t}" style="--tc:var(--t${t})"><span>${esc(teamName(t))}<small>${lk?'Bloquée':b.armed&&b.winner===null?'Buzz !':''}</small></span></div>`;}).join('');
 }
-function onBuzz(t){const b=V.bz;if(!b||!b.armed||b.winner!==null||b.locked.includes(t))return;if(!(V.teams||[0,1,2,3]).includes(t))return;b.winner=t;sBuzz(t);react('surprise');render();}
+function onBuzz(t){const b=V.bz;if(!b||!b.armed||b.winner!==null||b.locked.includes(t))return;if(!(V.teams||[0,1,2,3]).includes(t))return;b.winner=t;if(view==='blind'&&isSpIt())spPause();sBuzz(t);react('surprise');render();}
 function wrong(){const b=V.bz;sBad();b.locked.push(b.winner);b.winner=null;const left=(V.teams||[0,1,2,3]).filter(t=>!b.locked.includes(t));return left.length;}
 
 /* Blind test */
@@ -540,7 +622,7 @@ VIEWS.blind=()=>{
   let mid;
   if(b.winner!==null)mid=`<div class="judge" style="--tc:var(--t${b.winner})"><span class="wn">${esc(teamName(b.winner))} !</span><p class="muted">Coupe la musique et écoute la réponse</p><div class="row"><button class="btn good" data-act="blindGood" data-arg="1">Titre +1</button><button class="btn good" data-act="blindGood" data-arg="2">Titre et artiste +2</button><button class="btn bad" data-act="blindBad">Faux −1</button></div></div>`;
   else if(V.show)mid=`<p class="answer">${esc(it.t)}</p><p class="muted">${esc(it.a)}</p><button class="btn" data-act="blindNext">${V.n<5?'Extrait suivant':'Fin de la manche'}</button>`;
-  else if(!b.armed)mid=`<img class="masc" style="width:120px" src="${M.casque}" alt=""><p class="muted" style="max-width:40ch">Prépare l'extrait n°${V.n} sur ton téléphone, puis lance la musique et touche le bouton en même temps.</p><button class="btn big" data-act="blindArm">C'est parti !</button>`;
+  else if(!b.armed)mid=`<img class="masc" style="width:120px" src="${M.casque}" alt=""><p class="muted" style="max-width:40ch">${isSpIt()?'Extrait n°'+V.n+' : un titre de la playlist part au hasard sur Spotify dès que tu touches le bouton.':'Prépare l\'extrait n°'+V.n+' sur ton téléphone, puis lance la musique et touche le bouton en même temps.'}</p><button class="btn big" data-act="blindArm">C'est parti !</button>`;
   else mid=`<p class="qbig">Buzzez !</p><button class="ghost" data-act="blindReveal">Personne ne trouve, révéler</button>`;
   return zones(4,[0,1,2,3])+`<div class="bcenter c4"><span class="pill">Blind test · extrait ${V.n} / 5</span>${mid}${miniScores()}${b.armed&&!V.show&&b.winner===null?'':`<button class="ghost" data-act="blindReveal" ${V.show?'hidden':''}>Voir la réponse</button>`}</div><button class="ghost quit" data-act="go" data-arg="home">Quitter</button>`;
 };
@@ -633,11 +715,11 @@ const ACT={
  duelNext:()=>{if(V.n>=5){V.done=true;V.bz=newBz(false);const [A,B]=V.teams;if(V.pts[0]!==V.pts[1]){const w=V.pts[0]>V.pts[1]?A:B;addPts(w,2,'Bonus vainqueur du duel');sFanfare();}render();return;}V.it=pick('duel',duelItems());V.n++;V.show=false;V.bz=newBz(true);render();},
  duelAgain:()=>go('duel',{sel:V.teams.slice()}),
 
- blindArm:()=>{keepAwake();V.bz.armed=true;tone(880,.1,'sine');render();},
- blindGood:a=>{const w=V.bz.winner,n=Number(a);addPts(w,n,'Blind test');sGood();react('joie');V.show=true;V.bz.armed=false;V.bz.winner=null;render();},
- blindBad:()=>{const w=V.bz.winner;addPts(w,-1,'Blind test · erreur');toast(teamName(w)+' −1');if(wrong()===0){V.show=true;V.bz.armed=false;}react('oups');render();},
- blindReveal:()=>{V.show=true;V.bz.armed=false;V.bz.winner=null;render();},
- blindNext:()=>{if(V.n>=5){V.done=true;render();return;}V.it=pick('blind',blindItems());V.n++;V.show=false;V.bz=newBz(false);render();},
+ blindArm:()=>{keepAwake();if(isSpIt())spPlay(V.it);V.bz.armed=true;tone(880,.1,'sine');render();},
+ blindGood:a=>{const w=V.bz.winner,n=Number(a);addPts(w,n,'Blind test');sGood();react('joie');if(isSpIt())spResume();V.show=true;V.bz.armed=false;V.bz.winner=null;render();},
+ blindBad:()=>{const w=V.bz.winner;addPts(w,-1,'Blind test · erreur');toast(teamName(w)+' −1');if(wrong()===0){V.show=true;V.bz.armed=false;}if(isSpIt())spResume();react('oups');render();},
+ blindReveal:()=>{if(isSpIt())spResume();V.show=true;V.bz.armed=false;V.bz.winner=null;render();},
+ blindNext:()=>{if(V.n>=5){if(isSpIt())spPause();V.done=true;render();return;}if(isSpIt())spPause();V.it=pickBlind();V.n++;V.show=false;V.bz=newBz(false);render();},
  blindAgain:()=>startBlind(),
 
  photoZoom:()=>{if(V.z<ZMAX)V.z++;tone(440+V.z*120,.12,'sine');render();},
@@ -662,13 +744,18 @@ const ACT={
    render();},
  taupeAgain:()=>go('taupe',{sel:V.sel}),
 
+ spLogin:()=>spLogin(),
+ spReload:()=>{if(!spPid()){toast('Colle le lien de la playlist');return;}spLoadTracks();},
+ spDevs:async()=>{try{V.devs=await spApi('/me/player/devices').then(j=>(j&&j.devices)||[]);}catch(e){spErr(e);V.devs=[];}render();},
+ spDev:a=>{const d=(V.devs||[]).find(x=>x.id===a);SP.deviceId=a;SP.deviceName=d?d.name:'';spSave();render();toast('Musique sur : '+(SP.deviceName||'appareil choisi'));},
+ spOut:()=>{SP.access=SP.refresh=null;SP_TRACKS=null;spSave();render();},
  kahootAdd:()=>{const ids=[1,2,3].map(r=>$('#k'+r).value);if(ids.some(v=>v==='')){toast('Choisis les trois places');return;}if(new Set(ids).size<3){toast('Trois joueurs différents, s\'il te plaît');return;}
    ids.forEach((v,k)=>addPts(S.team[Number(v)],3-k,'Kahoot · '+pname(Number(v))));sGood();toast('Points du Kahoot ajoutés');go('home');},
 
  finNext:()=>{V.step=(V.step||0)+1;if(V.step===4){sFanfare();confetti();react('trophee');}else sDrum();render();},
  finConfetti:()=>{confetti();sFanfare();}
 };
-function startBlind(){const it=pick('blind',blindItems());keepAwake();go('blind',{it,n:1,bz:newBz(false)});}
+function startBlind(){const it=pickBlind();keepAwake();go('blind',{it,n:1,bz:newBz(false)});}
 function startPhoto(){let it;if(!(S.used.photo||[]).includes('demo-0')){it=DEMO[0];S.used.photo=(S.used.photo||[]).concat('demo-0');save();}else it=pick('photo',gamePhotos());keepAwake();go('photo',{it,n:1,z:0,bz:newBz(true)});}
 
 /* ---------- Événements ---------- */
@@ -678,6 +765,7 @@ document.addEventListener('pointerdown',e=>{const z=e.target.closest('[data-buzz
 document.addEventListener('input',e=>{const el=e.target.closest('[data-input]');if(!el)return;const a=el.dataset.arg;
   if(el.dataset.input==='player'){S.players[Number(a)]=el.value;save();}
   else if(el.dataset.input==='teamName'){S.teamNames[Number(a)]=el.value;save();}
+  else if(el.dataset.input==='sp'){SP[a]=el.value.trim();if(a==='playlist')SP_TRACKS=null;spSave();}
   else if(el.dataset.input==='content'){S.content[a]=el.value;save();}
   else if(el.dataset.input==='phLabel'){const p=PHOTOS.find(x=>x.id===a);if(p){p.label=el.value;clearTimeout(p._t);p._t=setTimeout(()=>{const c=Object.assign({},p);delete c._t;photoPut(c);},400);}}});
 document.addEventListener('change',async e=>{if(e.target.dataset.change!=='addPhotos')return;const files=[...e.target.files];if(!files.length)return;toast('Import de '+files.length+' photo'+(files.length>1?'s':'')+'…');
@@ -687,6 +775,7 @@ addEventListener('resize',()=>{if(view==='photo')render();});
 document.addEventListener('pointerdown',()=>keepAwake(),{once:true});
 
 try{history.replaceState({v:'home'},'');}catch(e){}
+spCallback().then(ok=>{if(spConnected()&&spPid())spLoadTracks();if(ok)go('prep');});
 photosAll().then(p=>{PHOTOS=p.map(x=>{delete x._t;return x;});render();});
 render();
 })();
