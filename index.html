@@ -514,8 +514,10 @@ function spErr(e){
 }
 function spStatus(msg,err){if(view!=='blind')return;V.spMsg=msg;V.spErr=!!err;render();}
 async function spDevicesList(){const j=await spApi('/me/player/devices');return (j&&j.devices)||[];}
-async function spStart(tr,pos){
-  const body=JSON.stringify({uris:[tr.raw],position_ms:pos});
+async function spStart(tr,pos,mode){
+  // Sur Android, lancer un titre seul (uris) est souvent ignoré : on lance la playlist en se plaçant sur le titre (context_uri + offset).
+  const pid=spPid();
+  const body=JSON.stringify((mode!=='uris'&&pid)?{context_uri:'spotify:playlist:'+pid,offset:{uri:tr.raw},position_ms:pos}:{uris:[tr.raw],position_ms:pos});
   try{await spApi('/me/player/play'+devQ(),{method:'PUT',body});return;}
   catch(e){
     if(e.reason==='PREMIUM_REQUIRED')throw e;
@@ -542,7 +544,7 @@ async function spPlay(tr){
   if(!(st&&st.is_playing)){
     try{await spApi('/me/player/play'+devQ(),{method:'PUT'});}catch(e){}
     await new Promise(r=>setTimeout(r,1200));st=await spState();
-    if(!(st&&st.is_playing)){try{await spApi('/me/player/play',{method:'PUT',body:JSON.stringify({uris:[tr.raw],position_ms:pos})});}catch(e){}
+    if(!(st&&st.is_playing)){try{await spStart(tr,pos,'uris');}catch(e){}
       await new Promise(r=>setTimeout(r,1500));st=await spState();}
   }
   if(st&&st.is_playing)spStatus('♪ En lecture sur '+((st.device&&st.device.name)||'Spotify'));
