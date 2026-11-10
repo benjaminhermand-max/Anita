@@ -77,7 +77,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .tile-art::before{content:"";position:absolute;left:4%;right:-30%;top:12%;bottom:-40%;border-radius:50%;background:var(--tint);border:3px solid var(--ink);border-right:0;border-bottom:0}
 .tile-art img{position:absolute;left:50%;bottom:-4px;height:90%;width:auto;max-width:118%;object-fit:contain;object-position:bottom;transform:translateX(-50%);transform-origin:50% 100%;transition:transform .25s cubic-bezier(.3,1.4,.5,1)}
 .tile:hover .tile-art img,.tile:focus-visible .tile-art img{transform:translateX(-50%) scale(1.05) rotate(-2deg)}
-.tile.final{background:var(--ink);color:#fff;box-shadow:0 6px 0 var(--t0);grid-column:span 2;grid-template-columns:minmax(0,1fr) 38%}
+.tile.final{background:var(--ink);color:#fff;box-shadow:0 6px 0 var(--t0);grid-column:1/-1;min-height:170px;grid-template-columns:minmax(0,1fr) 26%}
 .tile.final p{color:#D6D0EE}
 .tile.final .chip{background:var(--gold);color:var(--ink)}
 .tile.final .tile-art::before{border-color:var(--gold)}
@@ -199,9 +199,30 @@ textarea{min-height:180px;font-size:15px;line-height:1.5;resize:vertical}
 @keyframes spin{to{transform:rotate(360deg)}}
 .bt-time{font-family:var(--fd);font-weight:800;font-size:34px;line-height:1;color:var(--gold);font-variant-numeric:tabular-nums}
 .bt-time.low{color:#FF8FA3}
+.d-time{color:#fff;font-variant-numeric:tabular-nums}
+.d-time.low{color:#FF8FA3}
 #z-time{font-size:22px}
 .sp-line{font-size:13px;font-weight:700;color:#B7AEDD;max-width:46ch}
 .sp-line.err{color:#FF8FA3}
+/* Dessine-moi */
+.dwrap{position:absolute;inset:0;display:flex;flex-direction:column;gap:10px;padding:calc(12px + env(safe-area-inset-top,0px)) calc(14px + env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) calc(14px + env(safe-area-inset-left,0px));box-sizing:border-box}
+.dtop,.dtools{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dname{font-family:var(--fd);font-weight:800;font-size:clamp(20px,3.4vmin,30px)}
+.dsp{flex:1}
+.dboard{flex:1;min-height:0;position:relative;background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 8px 0 rgba(0,0,0,.4)}
+.dboard canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+.dcol{width:46px;height:46px;border-radius:50%;border:3px solid #fff;flex-shrink:0}
+.dcol.on{box-shadow:0 0 0 4px var(--gold);transform:scale(1.08)}
+.dover{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(28,20,51,.6);overflow:auto;text-align:center}
+.dover.solid{background:var(--night)}
+.dover .judge{max-width:620px;width:100%;box-sizing:border-box}
+#bz .dover .muted{color:var(--muted)}
+/* Roue des bonus */
+.wheel-lay{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px;align-items:center}
+.wheel-box{position:relative;width:min(100%,62vmin,520px);margin:0 auto;filter:drop-shadow(0 10px 0 rgba(28,20,51,.25))}
+.wheel-box svg{display:block;width:100%;height:auto;transition:transform 4.6s cubic-bezier(.12,.75,.1,1)}
+.wheel-ptr{position:absolute;top:-10px;left:50%;transform:translateX(-50%);z-index:2;width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-top:34px solid var(--t0);filter:drop-shadow(0 0 0 var(--ink)) drop-shadow(0 3px 0 var(--ink))}
+.wheel-side{min-width:0}
 /* Réaction de la mascotte */
 #react{position:fixed;left:50%;top:50%;width:min(32vmin,230px);height:auto;z-index:85;pointer-events:none;transform:translate(-50%,-50%) scale(.3);opacity:0}
 #react.show{animation:pop-react 1.1s cubic-bezier(.2,1.4,.4,1) both}
@@ -325,7 +346,38 @@ Champagne
 Montagne
 Pizza
 Cinéma
-Mariage`
+Mariage`,
+dessin:`Un gâteau d'anniversaire
+Une tartiflette
+Un télésiège
+Une vache
+La tour Eiffel
+Un croissant
+Une montagne
+Un cocktail
+Une glace
+Un taureau
+Un voilier
+Des lunettes de soleil
+Une perruque
+Un cochon
+Un cheval
+Une raclette
+Un sapin de Noël
+Une trottinette
+Un bonhomme de neige
+Un barbecue
+Une tente
+Un karaoké
+Un feu d'artifice
+Une valise`,
+gages:`Chanter « Joyeux anniversaire » en canon
+Porter un toast à Anita
+Danser 15 secondes sans musique
+Faire un compliment à chaque équipe adverse
+Parler avec un accent jusqu'au prochain jeu
+Raconter votre meilleur souvenir avec Anita en 20 secondes
+Faire le tour de la table en file indienne`
 };
 const TEAM_DEF=['Framboise','Menthe','Citron','Myrtille'];
 function defaults(){
@@ -454,7 +506,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 
 /* ---------- Routeur ---------- */
 let view='home',V={};
-const BUZZ_VIEWS=['duel-play','blind','photo'];
+const BUZZ_VIEWS=['duel-play','blind','photo','dessin-play'];
 function hist(v){try{const cur=history.state&&history.state.v;if(v==='home'){if(cur&&cur!=='home')history.replaceState({v:'home'},'');}else if(!cur||cur==='home')history.pushState({v:v},'');else history.replaceState({v:v},'');}catch(e){}}
 addEventListener('popstate',()=>{if(view!=='home'){if(view==='blind'){clearInterval(V.clk);if(isSpIt())spPause();}clearInterval(V&&V.tick);view='home';V={};render();try{window.scrollTo(0,0);}catch(e){}}});
 function go(v,init){if(V&&V.zclk)clearInterval(V.zclk);if(view==='blind'){clearInterval(V.clk);if(v!=='blind'&&isSpIt())spPause();}hist(v);view=v;V=init||{};render();try{window.scrollTo(0,0);}catch(e){}}
@@ -592,7 +644,9 @@ const GAMES=[
  {id:'blind',tint:'#E3DEFF',m:'casque',name:'Blind test',glyph:'♪',desc:'Un buzzer par équipe, aux 4 coins de la tablette.',who:'4 équipes',left:()=>spReady()?remaining('blindsp',SP_TRACKS)+' titres Spotify':remaining('blind',blindItems())+' extraits'},
  {id:'photo',tint:'#FFEDB8',m:'loupe',name:'Anita ou pas Anita ?',glyph:'◎',desc:'Zoom sur un détail. Anita, ou une vache ?',who:'4 équipes',left:()=>remaining('photo',gamePhotos())+' photos'},
  {id:'taupe',tint:'#EFE4D2',m:'taupe',name:'La Taupe',glyph:'?!',desc:'Tout le monde a le même mot, sauf un.',who:'Les 12',left:()=>remaining('taupe',lines('taupe'))+' mots'},
- {id:'kahoot',tint:'#FFDCE3',m:'joie',name:'Kahoot',glyph:'K',desc:'Chacun sur son téléphone, puis on reporte les points.',who:'Les 12',left:()=>'Podium → points'}
+ {id:'kahoot',tint:'#FFDCE3',m:'joie',name:'Kahoot',glyph:'K',desc:'Chacun sur son téléphone, puis on reporte les points.',who:'Les 12',left:()=>'Podium → points'},
+ {id:'dessin',tint:'#CFF5E9',m:'salut',name:'Dessine-moi',desc:'Un joueur dessine, le premier qui trouve marque.',who:'Les 12',left:()=>remaining('dessin',lines('dessin'))+' mots'},
+ {id:'roue',tint:'#FFEDB8',m:'surprise',name:'La Roue des bonus',desc:'Entre deux plats : points, vol, cadeau ou gage.',who:'1 équipe',left:()=>'8 cases'}
 ];
 const VIEWS={};
 
@@ -603,7 +657,7 @@ VIEWS.home=()=>{
   <div class="row"><button class="ghost" data-act="go" data-arg="teams">Équipes</button><button class="ghost" data-act="go" data-arg="prep">Préparer</button><button class="ghost" data-act="go" data-arg="scores">Scores</button><button class="ghost" data-act="fs">Plein écran</button></div></header>
   <section class="board" aria-label="Scores des équipes">${[0,1,2,3].map(t=>`<button class="tcard ${t===3?'t3':''}" style="--tc:var(--t${t})" data-act="go" data-arg="scores"><span class="rk ${rank(t)===1?'first':''}">${rank(t)}${rank(t)===1?'re':'e'}</span><span class="tn">${esc(teamName(t))}</span><span class="ts">${S.scores[t]}</span><span class="tm">${esc(members(t).join(' · ')||'Aucun joueur')}</span></button>`).join('')}</section>
   <section class="games">${GAMES.map(g=>`<button class="tile" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}
-  <button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 34 · 10 nov. 10h55</p>`;
+  <button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 35 · 10 nov. 11h50</p>`;
 };
 
 VIEWS.teams=()=>`<div class="bar">${back()}<button class="btn" data-act="shuffleTeams">Tirage au sort des équipes</button></div>
@@ -622,7 +676,7 @@ VIEWS.prep=()=>{
   return `<div class="bar">${back()}<button class="ghost" data-act="resetUsed">Rejouer toutes les questions</button></div>
   <div class="stack"><h2>Préparer le contenu</h2><p class="muted">Tout est enregistré sur cette tablette au fur et à mesure. Le contenu actuel est un exemple à remplacer.</p>
   ${spPrepCard()}<div class="cols2">${ta('plus','Qui est le plus…','Une question par ligne.')}${ta('duel','Le Duel','Une ligne par question, au format Catégorie | Question | Réponse')}
-  ${ta('blind','Blind test','Une ligne par chanson, au format Titre — Artiste. La musique se lance depuis ton téléphone sur l\'enceinte.')}${ta('taupe','La Taupe','Un mot par ligne. La Taupe ne reçoit pas le mot.')}</div>
+  ${ta('blind','Blind test','Une ligne par chanson, au format Titre — Artiste. La musique se lance depuis ton téléphone sur l\'enceinte.')}${ta('taupe','La Taupe','Un mot par ligne. La Taupe ne reçoit pas le mot.')}${ta('dessin','Dessine-moi','Un mot ou une expression à dessiner par ligne.')}${ta('gages','Gages de la Roue','Un gage par ligne, tiré au hasard quand la roue tombe sur Gage.')}</div>
   <h3>Anita ou pas Anita ?</h3><p class="muted">Ajoute les photos d'Anita et les leurres. Touche une photo pour choisir le détail de départ du zoom (le rond jaune). Les 20 photos déjà intégrées restent dans le jeu, celles ajoutées ici s'y ajoutent.</p>
   <label class="btn file" for="phin">+ Ajouter des photos<input id="phin" type="file" accept="image/*" multiple data-change="addPhotos"></label>
   <div class="phgrid">${PHOTOS.map(p=>`<div class="ph"><div class="thumb" data-focus="${p.id}"><img src="${p.data}" alt=""><span class="cross" style="left:${p.fx*100}%;top:${p.fy*100}%"></span></div>
@@ -664,8 +718,8 @@ VIEWS['duel-play']=()=>{
   if(V.done){const w=V.pts[0]===V.pts[1]?null:(V.pts[0]>V.pts[1]?A:B);
     return zones(2,V.teams)+`<div class="bcenter c2"><p class="eyebrow">Fin du duel</p><p class="qbig">${w===null?'Égalité !':esc(teamName(w))+' gagne le duel !'}</p><p class="muted">${esc(teamName(A))} ${V.pts[0]} · ${V.pts[1]} ${esc(teamName(B))}${w!==null?' · +2 points de bonus':''}</p><div class="row"><button class="btn" data-act="duelAgain">Nouveau duel</button><button class="ghost" data-act="go" data-arg="home">Accueil</button></div></div>`;}
   const it=V.it;
-  const face=`${b.winner!==null?'':`<span class="pill">${esc(it.cat)} · ${V.n} / 5</span>`}<p class="qbig">${esc(it.q)}</p>`;
-  const ans=V.show?`<p class="answer duel-ans">Réponse : ${esc(it.a)}</p>`:'';
+  const face=`${b.winner!==null?'':`<span class="pill">${esc(it.cat)} · ${V.n} / 5 · <b class="d-time ${(V.qLeft??DUEL_MS)<=5000?'low':''}">${Math.max(0,Math.ceil((V.qLeft??DUEL_MS)/1000))} s</b></span>`}<p class="qbig">${esc(it.q)}</p>`;
+  const ans=V.show?`${V.timeout?'<p class="muted">Temps écoulé, personne ne marque.</p>':''}<p class="answer duel-ans">Réponse : ${esc(it.a)}</p>`:'';
   let ctl='';
   if(b.winner!==null){ctl=`<div class="judge" style="--tc:var(--t${b.winner})"><span class="wn">${esc(teamName(b.winner))} répond !</span>${ans}<div class="row"><button class="btn good" data-act="duelGood">Juste +1</button><button class="btn bad" data-act="duelBad">Faux, +1 à l'adversaire</button><button class="ghost" data-act="duelShow">${V.show?'Masquer':'Voir'} la réponse</button></div></div>`;}
   else ctl=`${ans}<div class="row" style="justify-content:center"><button class="ghost" data-act="duelShow">${V.show?'Masquer':'Voir'} la réponse</button><button class="ghost" data-act="duelNext">${V.n<5?'Question suivante':'Terminer'}</button><button class="ghost" data-act="go" data-arg="home">Quitter</button></div>`;
@@ -773,6 +827,86 @@ VIEWS.finale=()=>{
   ${step<4?`<button class="btn big" data-act="finNext">Révéler la ${labels[step]}</button>`:'<button class="ghost" data-act="finConfetti">Encore des confettis</button>'}</div>`;
 };
 
+/* ---------- Dessine-moi ---------- */
+const DRAW_MS=60000,DRAW_N=5;
+const DCOL=['#1C1433','#FF4D6D','#19C99A','#6A5AE0','#FF9F1C'];
+function drawPickPlayer(not){const a=active().filter(p=>p.i!==not);return a.length?a[Math.floor(Math.random()*a.length)].i:null;}
+function drawRound(drawer,n){return {phase:'secret',drawer,word:pick('dessin',lines('dessin')),n,strokes:[],col:0,left:DRAW_MS,runAt:null,penSeen:false,finder:null};}
+function dLeft(){return Math.max(0,(V.left||0)-(V.runAt?Date.now()-V.runAt:0));}
+function dStop(){if(V.runAt){V.left=dLeft();V.runAt=null;}clearInterval(V.dclk);V.dclk=null;}
+function dStart(){if(V.runAt)return;V.runAt=Date.now();const me=V;clearInterval(V.dclk);
+  V.dclk=setInterval(()=>{if(V!==me||view!=='dessin-play'){clearInterval(me.dclk);return;}const l=dLeft();const el=document.getElementById('dr-time');
+    if(el){el.textContent=Math.ceil(l/1000)+' s';el.classList.toggle('low',l<=10000);}
+    if(l<=0){dStop();V.left=0;V.finder=null;V.phase='result';tone(330,.4,'sawtooth');render();}},200);}
+function drawSeg(x,cv,st,from){const w=cv.width,h=cv.height,base=w*0.006;x.strokeStyle=x.fillStyle=st.c;x.lineCap=x.lineJoin='round';
+  const lw=p=>base*(st.pen?(0.45+1.3*p[2]):1);
+  if(st.pts.length===1){const p=st.pts[0];x.beginPath();x.arc(p[0]*w,p[1]*h,lw(p)/2,0,7);x.fill();return;}
+  for(let i=Math.max(1,from);i<st.pts.length;i++){const a=st.pts[i-1],b=st.pts[i];x.lineWidth=lw(b);x.beginPath();x.moveTo(a[0]*w,a[1]*h);x.lineTo(b[0]*w,b[1]*h);x.stroke();}}
+function drawAll(){const cv=document.getElementById('dr-cv');if(!cv)return;const x=cv.getContext('2d');x.clearRect(0,0,cv.width,cv.height);(V.strokes||[]).forEach(st=>drawSeg(x,cv,st,0));}
+function drawInit(){const cv=document.getElementById('dr-cv');if(!cv)return;const r=cv.parentElement.getBoundingClientRect();const dpr=Math.min(2,window.devicePixelRatio||1);cv.width=Math.max(10,Math.round(r.width*dpr));cv.height=Math.max(10,Math.round(r.height*dpr));drawAll();}
+let dAct=null;
+const dPt=(e,cv)=>{const r=cv.getBoundingClientRect();return [(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height,e.pressure>0?e.pressure:0.5];};
+document.addEventListener('pointerdown',e=>{
+  const hold=e.target.closest&&e.target.closest('[data-hold]');
+  if(hold&&view==='dessin-play'){e.preventDefault();const el=document.getElementById('secret-word');if(el)el.textContent=V.word;return;}
+  if(e.target.id!=='dr-cv'||view!=='dessin-play'||V.phase!=='draw')return;
+  if(e.pointerType==='pen')V.penSeen=true;else if(V.penSeen&&e.pointerType==='touch')return; // paume ignorée quand on dessine au stylet
+  e.preventDefault();const cv=e.target,st={c:DCOL[V.col],pen:e.pointerType==='pen',pts:[dPt(e,cv)]};V.strokes.push(st);dAct={id:e.pointerId,st};
+  try{cv.setPointerCapture(e.pointerId);}catch(err){}drawSeg(cv.getContext('2d'),cv,st,0);},{passive:false});
+document.addEventListener('pointermove',e=>{if(!dAct||e.pointerId!==dAct.id)return;const cv=document.getElementById('dr-cv');if(!cv)return;
+  const evs=e.getCoalescedEvents?e.getCoalescedEvents():[e];const from=dAct.st.pts.length;(evs.length?evs:[e]).forEach(ev=>dAct.st.pts.push(dPt(ev,cv)));drawSeg(cv.getContext('2d'),cv,dAct.st,from);});
+function dUp(e){if(dAct&&e.pointerId===dAct.id)dAct=null;const el=document.getElementById('secret-word');if(el)el.textContent='• • • • •';}
+document.addEventListener('pointerup',dUp);document.addEventListener('pointercancel',dUp);
+addEventListener('resize',()=>{if(view==='dessin-play')drawInit();});
+
+VIEWS.dessin=()=>`<div class="bar">${back()}</div><div class="center card" style="max-width:820px;margin:0 auto">
+ <img class="masc" style="width:110px" src="${M.salut}" alt=""><p class="eyebrow">Dessine-moi</p><h2>Un joueur dessine, tout le monde devine</h2>
+ <div class="rules">
+  <p><b>1.</b> Un joueur tiré au sort reçoit un <b>mot secret</b>. Pendant qu'il le regarde, <b>tous les autres ferment les yeux</b>, car la télé montre le même écran que la tablette.</p>
+  <p><b>2.</b> Il a <b>60 secondes</b> pour le dessiner sur la tablette, au stylet ou au doigt. Interdit d'écrire des lettres ou de parler.</p>
+  <p><b>3.</b> Tout le monde regarde la télé et crie ses idées. Le premier qui trouve fait gagner <b>1 point à son équipe</b>, et l'équipe du dessinateur gagne aussi <b>1 point</b>.</p>
+  <p><b>4.</b> Celui qui a trouvé <b>dessine le mot suivant</b>. Une manche = <b>${DRAW_N} dessins</b>.</p>
+ </div>
+ <button class="btn big" data-act="drawGo">Prêt ?</button></div>`;
+
+VIEWS['dessin-play']=()=>{
+  const nm=esc(pname(V.drawer)),sec=Math.ceil(dLeft()/1000);let over='';
+  if(V.done)over=`<div class="dover solid"><div class="judge" style="--tc:var(--gold)"><img class="masc" style="width:120px" src="${M.joie}" alt=""><span class="wn">Fin de la manche</span><p class="muted">${DRAW_N} dessins joués</p>${miniScores()}<div class="row"><button class="btn" data-act="drawAgain">Nouvelle manche</button><button class="ghost" data-act="go" data-arg="home">Accueil</button></div></div></div>`;
+  else if(V.phase==='secret')over=`<div class="dover solid"><div class="judge" style="--tc:var(--t${S.team[V.drawer]})"><p class="muted">Dessin ${V.n} / ${DRAW_N}</p><span class="wn">${nm} dessine</span><p class="muted" style="max-width:44ch">Tous les autres ferment les yeux ! Le mot s'affiche aussi sur la télé.</p><button class="btn" data-hold="word">Maintiens appuyé pour voir ton mot</button><p class="answer" id="secret-word">• • • • •</p><div class="row"><button class="btn good" data-act="drawStart">J'ai vu, je dessine</button><button class="ghost" data-act="drawOther">Changer de mot</button></div></div></div>`;
+  else if(V.phase==='found')over=`<div class="dover"><div class="judge" style="--tc:var(--gold);max-width:760px"><span class="wn">Qui a trouvé ?</span><div class="grid-names">${active().filter(p=>p.i!==V.drawer).map(p=>`<button class="nbtn" style="--tc:var(--t${S.team[p.i]})" data-act="drawWho" data-arg="${p.i}">${esc(p.n)}</button>`).join('')}</div><button class="ghost" data-act="drawContinue">Fausse alerte, on continue</button></div></div>`;
+  else if(V.phase==='result'){const f=V.finder;
+    over=`<div class="dover"><div class="judge" style="--tc:var(--gold)"><p class="muted">Le mot était</p><p class="answer" style="font-size:clamp(28px,5vmin,48px)">${esc(V.word)}</p>${f!=null?`<span class="wn">Trouvé par ${esc(pname(f))} !</span><div class="gains"><span class="gain" style="--tc:var(--t${S.team[f]})">${esc(teamName(S.team[f]))} +1</span><span class="gain" style="--tc:var(--t${S.team[V.drawer]})">${esc(teamName(S.team[V.drawer]))} +1</span></div>`:`<span class="wn">Personne n'a trouvé</span>`}${V.n<DRAW_N?`<p class="muted">${f!=null?esc(pname(f))+' dessine le mot suivant.':'Un nouveau dessinateur est tiré au sort.'}</p>`:''}<div class="row"><button class="btn" data-act="drawNext">${V.n<DRAW_N?'Dessin suivant':'Fin de la manche'}</button><button class="ghost" data-act="go" data-arg="home">Quitter</button></div></div></div>`;}
+  return `<div class="dwrap"><div class="dtop"><span class="pill">Dessin ${V.n} / ${DRAW_N}</span><span class="dname">${nm} dessine</span><span class="bt-time ${dLeft()<=10000?'low':''}" id="dr-time">${sec} s</span><span class="dsp"></span><button class="btn good" data-act="drawFound">Trouvé !</button><button class="ghost" data-act="drawSkip">Passer</button></div>
+  <div class="dboard"><canvas id="dr-cv" aria-label="Zone de dessin"></canvas></div>
+  <div class="dtools">${DCOL.map((c,i)=>`<button class="dcol ${V.col===i?'on':''}" style="background:${c}" data-act="drawCol" data-arg="${i}" aria-label="Couleur ${i+1}"></button>`).join('')}<button class="ghost" data-act="drawUndo">Annuler le trait</button><button class="ghost" data-act="drawClear">Tout effacer</button><span class="dsp"></span><button class="ghost" data-act="go" data-arg="home">Quitter</button></div>${over}</div>`;
+};
+render=(r=>function(){r();if(view==='dessin-play')drawInit();})(render);
+
+/* ---------- La Roue des bonus ---------- */
+const WSEG=[{l:['+1'],k:'p1'},{l:['Gage'],k:'gage'},{l:['+2'],k:'p2'},{l:['Vol','de 2'],k:'vol'},{l:['+3'],k:'p3'},{l:['Raté'],k:'rien'},{l:['Cadeau'],k:'cadeau'},{l:['Jackpot','+5'],k:'p5'}];
+const WCOL=['#FFC93C','#FF4D6D','#19C99A','#6A5AE0'];
+function wheelSvg(){const n=WSEG.length,a=360/n,R=100;const P=(d,r)=>{const t=(d-90)*Math.PI/180;return (r*Math.cos(t)).toFixed(2)+' '+(r*Math.sin(t)).toFixed(2);};
+  let h='',pegs='';WSEG.forEach((sg,i)=>{const c=i%4,two=sg.l.length>1;
+    h+=`<path d="M0 0L${P(i*a,R)}A${R} ${R} 0 0 1 ${P((i+1)*a,R)}Z" fill="${WCOL[c]}" stroke="#1C1433" stroke-width="2.5"/>`;
+    h+=`<text transform="rotate(${i*a+a/2})" text-anchor="middle" font-family="Bricolage Grotesque,Arial,sans-serif" font-weight="800" font-size="${two?12.5:(sg.l[0].length>4?14:17)}" fill="${c===3?'#fff':'#1C1433'}">${sg.l.map((t,j)=>`<tspan x="0" y="${two?-76+j*13:-66}">${t}</tspan>`).join('')}</text>`;
+    const pg=P(i*a,96).split(' ');pegs+=`<circle cx="${pg[0]}" cy="${pg[1]}" r="3.4" fill="#fff" stroke="#1C1433" stroke-width="1.5"/>`;});
+  return `<svg id="wheel" viewBox="-112 -112 224 224" style="transform:rotate(${V.rot||0}deg)" role="img" aria-label="Roue des bonus"><circle r="108" fill="#1C1433"/>${h}<circle r="101" fill="none" stroke="#1C1433" stroke-width="5"/>${pegs}<circle r="21" fill="#FFC93C" stroke="#1C1433" stroke-width="4"/><circle r="7" fill="#1C1433"/></svg>`;}
+VIEWS.roue=()=>{const res=V.res;
+  return `<div class="bar">${back()}</div><div class="wheel-lay"><div class="wheel-box"><span class="wheel-ptr" aria-hidden="true"></span>${wheelSvg()}</div>
+  <div class="stack card wheel-side"><p class="eyebrow">La Roue des bonus</p>
+  ${res?`<img class="masc" style="width:130px;align-self:center" src="${M[res.m]}" alt=""><h2>${esc(res.title)}</h2><p style="font-size:18px">${esc(res.text)}</p><div class="row"><button class="btn" data-act="wheelReset">Une autre équipe</button><button class="ghost" data-act="go" data-arg="home">Accueil</button></div>`
+       :`<h2>Quelle équipe tourne la roue ?</h2><div class="grid-names" style="grid-template-columns:repeat(2,minmax(0,1fr))">${[0,1,2,3].map(t=>`<button class="nbtn ${V.team===t?'sel':''}" style="--tc:var(--t${t})" data-act="wheelTeam" data-arg="${t}">${esc(teamName(t))}</button>`).join('')}</div><button class="btn big" data-act="wheelSpin" ${V.team==null?'disabled style="opacity:.4"':''}>Lancer la roue</button>
+       <p class="muted" style="font-size:14px"><b>Vol de 2</b> : prend 2 points à la meilleure équipe adverse. <b>Cadeau</b> : 1 point pour chacune des 3 autres équipes. <b>Gage</b> : un défi à relever, sans point.</p>`}
+  </div></div>`;};
+function wheelApply(i){const k=WSEG[i].k,t=V.team,tn=teamName(t),others=[0,1,2,3].filter(x=>x!==t);let r;
+  if(k[0]==='p'){const n=Number(k[1]);addPts(t,n,'Roue des bonus');r={m:'joie',title:(n===5?'Jackpot ! ':'')+'+'+n+' pour '+tn,text:n===5?'Le gros lot de la roue.':'Des points tombés du ciel.'};if(n===5){sFanfare();confetti();}else sGood();}
+  else if(k==='gage'){const g=lines('gages');r={m:'oups',title:'Gage pour '+tn+' !',text:g.length?g[Math.floor(Math.random()*g.length)]:'Inventez un gage pour cette équipe.'};sBad();}
+  else if(k==='vol'){const v=others.slice().sort((a,b)=>S.scores[b]-S.scores[a])[0],n=Math.min(2,Math.max(0,S.scores[v]));if(n>0){addPts(v,-n,'Roue · volé par '+tn);addPts(t,n,'Roue · vol');}
+    r={m:'taupe',title:n?'Vol de '+n+' point'+(n>1?'s':'')+' !':'Rien à voler',text:n?tn+' prend '+n+' point'+(n>1?'s':'')+' à '+teamName(v)+'.':teamName(v)+' n\'a aucun point à se faire voler.'};sGood();}
+  else if(k==='cadeau'){others.forEach(x=>addPts(x,1,'Roue · cadeau de '+tn));r={m:'surprise',title:'Cadeau !',text:tn+' offre 1 point à chacune des 3 autres équipes.'};sBad();}
+  else{r={m:'oups',title:'Raté !',text:'Rien pour '+tn+' cette fois.'};sBad();}
+  V.res=r;}
+
 /* ---------- Actions ---------- */
 const ACT={
  go:a=>{ if(a==='photo'){go('photo-intro');return;} if(a==='blind'){startBlind();return;} go(a); },
@@ -805,11 +939,11 @@ const ACT={
  plusRevealNext:()=>{if(V.r>=V.qs.length-1){V.phase='end';sFanfare();render();return;}V.r++;ACT._plusPay();},
 
  duelPick:a=>{const t=Number(a);V.sel=V.sel||[];if(V.sel.includes(t))V.sel=V.sel.filter(x=>x!==t);else{V.sel.push(t);if(V.sel.length>2)V.sel.shift();}render();},
- duelGo:()=>{if((V.sel||[]).length!==2)return;const it=pick('duel',duelItems());if(!it){toast('Ajoute des questions dans Préparer');return;}keepAwake();go('duel-play',{teams:V.sel.slice(),pts:[0,0],n:1,it,bz:newBz(true)});},
+ duelGo:()=>{if((V.sel||[]).length!==2)return;const it=pick('duel',duelItems());if(!it){toast('Ajoute des questions dans Préparer');return;}keepAwake();go('duel-play',{teams:V.sel.slice(),pts:[0,0],n:1,it,bz:newBz(true)});duelTimer();},
  duelShow:()=>{V.show=!V.show;render();},
  duelGood:()=>{const w=V.bz.winner;V.pts[V.teams.indexOf(w)]++;addPts(w,1,'Duel');sGood();react('joie');V.show=true;V.bz.armed=false;V.bz.winner=null;const n=V.n,me=V;setTimeout(()=>{if(view==='duel-play'&&V===me&&V.n===n&&!V.done)ACT.duelNext();},1600);render();},
  duelBad:()=>{const w=V.bz.winner,o=V.teams.find(t=>t!==w);V.pts[V.teams.indexOf(o)]++;addPts(o,1,'Duel · erreur adverse');sBad();V.show=true;V.bz.armed=false;V.bz.winner=null;toast(teamName(o)+' +1, erreur de l\'adversaire');react('oups');render();},
- duelNext:()=>{if(V.n>=5){V.done=true;V.bz=newBz(false);const [A,B]=V.teams;if(V.pts[0]!==V.pts[1]){const w=V.pts[0]>V.pts[1]?A:B;addPts(w,2,'Bonus vainqueur du duel');sFanfare();}render();return;}V.it=pick('duel',duelItems());V.n++;V.show=false;V.bz=newBz(true);render();},
+ duelNext:()=>{if(V.n>=5){V.done=true;V.bz=newBz(false);const [A,B]=V.teams;if(V.pts[0]!==V.pts[1]){const w=V.pts[0]>V.pts[1]?A:B;addPts(w,2,'Bonus vainqueur du duel');sFanfare();}render();return;}V.it=pick('duel',duelItems());V.n++;V.show=false;V.bz=newBz(true);render();duelTimer();},
  duelAgain:()=>go('duel',{sel:V.teams.slice()}),
 
  blindArm:()=>{keepAwake();if(isSpIt())spPlay(V.it);V.bz.armed=true;V.left=EXTRAIT_MS;V.ended=false;clkStart();tone(880,.1,'sine');render();},
@@ -849,12 +983,38 @@ const ACT={
  spDev:a=>{const d=(V.devs||[]).find(x=>x.id===a);SP.deviceId=a;SP.deviceName=d?d.name:'';spSave();render();toast('Musique sur : '+(SP.deviceName||'appareil choisi'));},
  spTest:async()=>{if(!spReady()){toast('Charge d\'abord la playlist');return;}const tr=SP_TRACKS[Math.floor(Math.random()*SP_TRACKS.length)];toast('Test : '+tr.t);V.spDiag='Test en cours…';render();try{await spStart(tr,30000);await new Promise(r=>setTimeout(r,2500));const st=await spState();V.spDiag=spDiagText(st)+(st&&st.is_playing?' ✓':' ✗');setTimeout(()=>spPause(),8000);}catch(e){spErr(e);V.spDiag='Erreur : '+e.message;}render();},
  spOut:()=>{SP.access=SP.refresh=null;SP_TRACKS=null;spSave();render();},
+ drawGo:()=>{if(!lines('dessin').length){toast('Ajoute des mots dans Préparer');return;}keepAwake();go('dessin-play',drawRound(drawPickPlayer(null),1));},
+ drawOther:()=>{V.word=pick('dessin',lines('dessin'));toast('Nouveau mot tiré');},
+ drawStart:()=>{V.phase='draw';render();dStart();},
+ drawCol:a=>{V.col=Number(a);render();},
+ drawUndo:()=>{V.strokes.pop();drawAll();},
+ drawClear:()=>{V.strokes=[];drawAll();},
+ drawFound:()=>{if(V.phase!=='draw')return;dStop();V.phase='found';render();},
+ drawContinue:()=>{V.phase='draw';render();dStart();},
+ drawWho:a=>{const f=Number(a);V.finder=f;addPts(S.team[f],1,'Dessin · trouvé par '+pname(f));addPts(S.team[V.drawer],1,'Dessin · dessiné par '+pname(V.drawer));sGood();react('joie');V.phase='result';render();},
+ drawSkip:()=>{if(V.phase!=='draw')return;dStop();V.finder=null;V.phase='result';render();},
+ drawNext:()=>{if(V.n>=DRAW_N){V.done=true;render();return;}const nd=V.finder!=null?V.finder:drawPickPlayer(V.drawer);go('dessin-play',drawRound(nd,V.n+1));},
+ drawAgain:()=>go('dessin'),
+ wheelTeam:a=>{if(V.spinning)return;V.team=Number(a);render();},
+ wheelReset:()=>{V.res=null;V.team=null;render();},
+ wheelSpin:()=>{if(V.team==null||V.spinning)return;const el=$('#wheel');if(!el)return;const n=WSEG.length,a=360/n,i=Math.floor(Math.random()*n),cur=V.rot||0;
+   const target=cur-(cur%360)+360*5+(360-(i*a+a/2))+(Math.random()*26-13);V.spinning=true;el.style.transform='rotate('+target+'deg)';
+   document.querySelectorAll('[data-act="wheelSpin"],[data-act="wheelTeam"]').forEach(b=>b.disabled=true);
+   for(let k=0;k<26;k++)setTimeout(()=>{if(view==='roue')tone(700+Math.random()*200,.03,'square',0,.07);},4300*(1-Math.pow(1-k/26,2.4)));
+   const me=V;setTimeout(()=>{if(V!==me||view!=='roue')return;V.rot=target%360;V.spinning=false;wheelApply(i);render();},4850);},
  kahootAdd:()=>{const ids=[1,2,3].map(r=>$('#k'+r).value);if(ids.some(v=>v==='')){toast('Choisis les trois places');return;}if(new Set(ids).size<3){toast('Trois joueurs différents, s\'il te plaît');return;}
    ids.forEach((v,k)=>addPts(S.team[Number(v)],3-k,'Kahoot · '+pname(Number(v))));sGood();toast('Points du Kahoot ajoutés');go('home');},
 
  finNext:()=>{V.step=(V.step||0)+1;if(V.step===4){sFanfare();confetti();react('trophee');}else sDrum();render();},
  finConfetti:()=>{confetti();sFanfare();}
 };
+const DUEL_MS=20000;
+function duelTimer(){clearInterval(V.dq);V.qLeft=DUEL_MS;V.timeout=false;let last=Date.now();const me=V;
+  V.dq=setInterval(()=>{if(V!==me||view!=='duel-play'){clearInterval(me.dq);return;}const now=Date.now(),dt=now-last;last=now;
+    if(V.bz.winner!==null)return; // en pause pendant qu'un champion répond
+    if(V.done||V.show||!V.bz.armed){clearInterval(V.dq);return;}
+    V.qLeft-=dt;const sec=Math.max(0,Math.ceil(V.qLeft/1000));document.querySelectorAll('.d-time').forEach(el=>{el.textContent=sec+' s';el.classList.toggle('low',V.qLeft<=5000);});
+    if(V.qLeft<=0){clearInterval(V.dq);V.bz.armed=false;V.show=true;V.timeout=true;tone(330,.4,'sawtooth');render();}},200);}
 function startBlind(){const it=pickBlind();keepAwake();go('blind',{it,n:1,bz:newBz(false)});}
 const AUTOZOOM_MS=8000;
 function zoomTimer(){clearInterval(V.zclk);if(V.z>=ZMAX)return;V.zLeft=AUTOZOOM_MS;let last=Date.now();const me=V;
