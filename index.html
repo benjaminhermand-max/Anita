@@ -211,6 +211,11 @@ textarea{min-height:180px;font-size:15px;line-height:1.5;resize:vertical}
 #z-time{font-size:22px}
 .sp-line{font-size:13px;font-weight:700;color:#B7AEDD;max-width:46ch}
 .sp-line.err{color:#FF8FA3}
+.verdict{font-family:var(--fd);font-weight:800;font-size:clamp(18px,3vmin,26px);padding:8px 18px;border-radius:99px;color:var(--ink)}
+.verdict.ok{background:var(--good)}
+.verdict.ko{background:var(--bad);color:#fff}
+.ans-a{background:var(--gold)}
+.btn.ans-b{background:var(--t3);color:#fff}
 /* Dessine-moi */
 #bz,#bz *{-webkit-touch-callout:none}
 [data-hold]{touch-action:none;-webkit-user-select:none;user-select:none}
@@ -689,7 +694,7 @@ VIEWS.home=()=>{
   return `<header class="top"><div class="brand"><img class="masc-head" src="${M.salut}" alt=""><div class="stack" style="gap:4px;min-width:0"><p class="eyebrow">L'anniversaire en jeux · fil rouge</p><h1>Anita <span>Party</span></h1></div></div>
   <div class="row"><button class="ghost" data-act="go" data-arg="teams">Équipes</button><button class="ghost" data-act="go" data-arg="prep">Préparer</button><button class="ghost" data-act="go" data-arg="scores">Scores</button><button class="ghost" data-act="fs">Plein écran</button></div></header>
   <section class="board" aria-label="Scores des équipes">${[0,1,2,3].map(t=>`<button class="tcard ${t===3?'t3':''}" style="--tc:var(--t${t})" data-act="go" data-arg="scores"><span class="rk ${rank(t)===1?'first':''}">${rank(t)}${rank(t)===1?'re':'e'}</span><span class="tn">${esc(teamName(t))}</span><span class="ts">${S.scores[t]}${x2()[t]?'<span class="x2b">×2 au prochain jeu</span>':''}</span><span class="tm">${esc(members(t).join(' · ')||'Aucun joueur')}</span></button>`).join('')}</section>
-  <p class="eyebrow sec">Les jeux</p><section class="games">${GAMES.filter(g=>g.id!=='roue').map(g=>`<button class="tile" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}</section><p class="eyebrow sec">Entre deux jeux et pour finir</p><section class="specials">${GAMES.filter(g=>g.id==='roue').map(g=>`<button class="tile bonus" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}<button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 46 · 10 nov. 22h55</p>`;
+  <p class="eyebrow sec">Les jeux</p><section class="games">${GAMES.filter(g=>g.id!=='roue').map(g=>`<button class="tile" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}</section><p class="eyebrow sec">Entre deux jeux et pour finir</p><section class="specials">${GAMES.filter(g=>g.id==='roue').map(g=>`<button class="tile bonus" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}<button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 47 · 10 nov. 23h00</p>`;
 };
 
 VIEWS.teams=()=>`<div class="bar">${back()}<button class="btn" data-act="shuffleTeams">Tirage au sort des équipes</button></div>
@@ -799,12 +804,12 @@ const ZL=[7,4.5,1],ZP=[2,1],ZMAX=1;
 VIEWS.photo=()=>{
   const b=V.bz,p=V.it;
   if(V.done)return zones(4,[0,1,2,3])+`<div class="bcenter c4"><img class="masc" style="width:130px" src="${M.loupe}" alt=""><p class="eyebrow">Fin de la manche</p><p class="qbig">4 photos jouées</p>${miniScores()}<div class="row"><button class="btn" data-act="photoAgain">Nouvelle manche</button><button class="ghost" data-act="go" data-arg="home">Accueil</button></div></div>`;
-  const vh=innerHeight,vw=innerWidth,maxW=vw-2*(Math.min(vw,vh)*.23+40),maxH=vh*.42;
+  const vh=innerHeight,vw=innerWidth,maxW=vw-2*(Math.min(vw,vh)*.23+40),maxH=vh*.38;
   let H=maxH,W=H*p.ar;if(W>maxW){W=maxW;H=W/p.ar;}
   const lvl=V.show?ZL.length-1:V.z,sc=ZL[lvl];
   let mid;
-  if(V.show)mid=`<p class="qbig">${p.anita?'C\'est Anita !':(p.label?'C\'est… '+esc(p.label)+' !':'Ce n\'est pas Anita !')}</p><button class="btn" data-act="photoNext">${V.n<4?'Photo suivante':'Fin de la manche'}</button>`;
-  else if(b.winner!==null)mid=`<div class="judge" style="--tc:var(--t${b.winner})"><span class="wn">${esc(teamName(b.winner))} !</span><p class="muted">Anita ou pas Anita ? Et sinon, qu'est-ce que c'est ?</p><div class="row"><button class="btn good" data-act="photoGood">Juste +${ZP[V.z]}</button><button class="btn bad" data-act="photoBad">Faux, +1 aux autres</button></div></div>`;
+  if(V.show)mid=`${V.verdict?`<p class="verdict ${V.verdict.ok?'ok':'ko'}">${esc(V.verdict.text)}</p>`:''}<p class="qbig">${p.anita?'C\'est Anita !':(p.label?'C\'est… '+esc(p.label)+' !':'Ce n\'est pas Anita !')}</p><button class="btn" data-act="photoNext">${V.n<4?'Photo suivante':'Fin de la manche'}</button>`;
+  else if(b.winner!==null)mid=`<div class="judge" style="--tc:var(--t${b.winner})"><span class="wn">${esc(teamName(b.winner))} !</span><p class="muted">À vous de répondre sur la tablette : ${ZP[V.z]} point${ZP[V.z]>1?'s':''} en jeu.</p><div class="row"><button class="btn big ans-a" data-act="photoAnswer" data-arg="1">Anita</button><button class="btn big ans-b" data-act="photoAnswer" data-arg="0">Pas Anita</button></div></div>`;
   else mid=`${V.z<ZMAX?`<p class="bt-time" id="z-time">Dézoom dans ${Math.max(0,Math.ceil((V.zLeft??AUTOZOOM_MS)/1000))} s</p>`:''}<div class="row" style="justify-content:center">${V.z<ZMAX?`<button class="btn" data-act="photoZoom">Dézoomer maintenant</button>`:''}<button class="ghost" data-act="photoReveal">Révéler</button></div>`;
   return zones(4,[0,1,2,3])+`<div class="bcenter c4"><span class="pill">Photo ${V.n} / 4 · ${V.show?'Réponse':ZP[V.z]+' point'+(ZP[V.z]>1?'s':'')+' en jeu'}</span>
    <div class="zoombox" style="width:${Math.round(W)}px;height:${Math.round(H)}px"><img src="${p.data}" alt="Photo mystère" style="transform-origin:${p.fx*100}% ${p.fy*100}%;transform:scale(${sc})"></div>
@@ -816,7 +821,7 @@ VIEWS['photo-intro']=()=>`<div class="bar">${back()}</div><div class="center car
  <img class="masc" style="width:110px" src="${M.loupe}" alt=""><p class="eyebrow">Anita ou pas Anita ?</p><h2>Qui se cache derrière ce détail ?</h2>
  <div class="rules">
   <p><b>1.</b> Une photo s'affiche, <b>très zoomée</b> sur un petit détail : un bout de tissu, une couleur, un décor…</p>
-  <p><b>2.</b> Chaque équipe a son <b>buzzer dans un coin</b> de la tablette. La première qui buzze répond : <b>Anita ou pas Anita ?</b> Et si ce n'est pas elle, qui ou quoi ?</p>
+  <p><b>2.</b> Chaque équipe a son <b>buzzer dans un coin</b> de la tablette. La première qui buzze <b>répond sur la tablette</b> en touchant <b>Anita</b> ou <b>Pas Anita</b>. La photo entière et les points s'affichent aussitôt.</p>
   <p><b>3.</b> Bonne réponse tout de suite : <b>2 points</b>. Si personne ne trouve, on dézoome une fois et la photo ne vaut plus que <b>1 point</b>.</p>
   <p><b>4.</b> Mauvaise réponse : les <b>3 autres équipes gagnent 1 point</b> chacune.</p>
   <p><b>5.</b> Une manche = <b>4 photos</b>. Posez la tablette à plat au milieu de la table.</p>
@@ -990,10 +995,13 @@ const ACT={
  blindAgain:()=>startBlind(),
 
  photoZoom:()=>{clearInterval(V.zclk);if(V.z<ZMAX)V.z++;tone(440+V.z*120,.12,'sine');render();},
+ photoAnswer:a=>{const w=V.bz.winner;if(w==null)return;const saysAnita=a==='1',ok=saysAnita===!!V.it.anita,said=saysAnita?'« Anita »':'« Pas Anita »';
+   if(ok){const n=ZP[V.z];V.verdict={ok:true,text:teamName(w)+' a répondu '+said+' : bonne réponse, +'+n+' !'};ACT.photoGood();}
+   else{V.verdict={ok:false,text:teamName(w)+' a répondu '+said+' : raté, +1 pour les 3 autres équipes.'};ACT.photoBad();}},
  photoGood:()=>{const w=V.bz.winner;addPts(w,ZP[V.z],'Anita ou pas Anita ?');sGood();react('joie');V.show=true;V.bz.armed=false;V.bz.winner=null;render();},
  photoBad:()=>{const w=V.bz.winner;[0,1,2,3].filter(t=>t!==w).forEach(t=>addPts(t,1,'Anita ou pas · erreur adverse'));sBad();toast('Les 3 autres équipes +1');V.show=true;V.bz.armed=false;V.bz.winner=null;react('oups');render();},
- photoReveal:()=>{V.show=true;V.bz.armed=false;V.bz.winner=null;render();},
- photoNext:()=>{if(V.n>=4){V.done=true;render();return;}V.it=pick('photo',gamePhotos());V.n++;V.z=0;V.show=false;V.bz=newBz(true);render();zoomTimer();},
+ photoReveal:()=>{V.verdict=null;V.show=true;V.bz.armed=false;V.bz.winner=null;render();},
+ photoNext:()=>{if(V.n>=4){V.done=true;render();return;}V.it=pick('photo',gamePhotos());V.n++;V.z=0;V.show=false;V.verdict=null;V.bz=newBz(true);render();zoomTimer();},
  photoGo:()=>startPhoto(),
  photoAgain:()=>startPhoto(),
 
