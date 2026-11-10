@@ -233,6 +233,21 @@ textarea{min-height:180px;font-size:15px;line-height:1.5;resize:vertical}
 .dcol.on{box-shadow:0 0 0 4px var(--gold);transform:scale(1.08)}
 .dover{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(28,20,51,.6);overflow:auto;text-align:center}
 .dover.solid{background:var(--night)}
+.dover{touch-action:pan-y}
+.gal{width:100%;max-width:1180px;display:flex;flex-direction:column;gap:14px;align-items:center;margin:auto}
+.ggrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;width:100%}
+.dover.solid.museum{background:radial-gradient(ellipse at 50% -10%,#5A3352 0,#3A2440 45%,#231530 100%)}
+.ggrid{gap:18px 22px}
+.gcard{position:relative;background:none;border:0;padding:0;display:flex;flex-direction:column;align-items:center;gap:9px;color:var(--ink);min-width:0}
+.gcard::before{content:"";position:absolute;left:6%;right:6%;top:-16px;height:70%;background:radial-gradient(ellipse at 50% 0,rgba(255,236,170,.30),transparent 70%);pointer-events:none}
+.frame{position:relative;display:block;width:100%;box-sizing:border-box;padding:9px;background:#FBF7EC;border:12px solid #C9972B;border-image:linear-gradient(135deg,#F6D879,#B07A16 28%,#FFE9A3 50%,#A8700F 72%,#F1CB5E) 1;box-shadow:0 0 0 2px #6B4708,inset 0 0 0 2px #6B4708,0 12px 20px rgba(0,0,0,.55)}
+.gcard canvas{display:block;width:100%;height:auto;background:#fff;box-shadow:inset 0 0 0 1px #d8d0bb}
+.gcap{display:flex;flex-direction:column;gap:1px;align-items:center;text-align:center;max-width:92%;padding:5px 12px 6px;background:#FBF7EC;border-radius:3px;box-shadow:0 2px 0 rgba(0,0,0,.45);font-size:11.5px;color:#5B4F80;margin:0}
+.gcap b{font-family:var(--fd);font-size:15px;color:var(--ink)}
+.gcard.bigc{width:min(100%,calc((100vh - 230px)*1.55))}
+.gcard.bigc .frame{border-width:20px;padding:14px}
+.gcard.bigc .gcap{font-size:15px}.gcard.bigc .gcap b{font-size:24px}
+@media (max-width:700px){.ggrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .dover .judge{max-width:620px;width:100%;box-sizing:border-box}
 #bz .dover .muted{color:var(--muted)}
 /* Roue des bonus */
@@ -694,7 +709,7 @@ VIEWS.home=()=>{
   return `<header class="top"><div class="brand"><img class="masc-head" src="${M.salut}" alt=""><div class="stack" style="gap:4px;min-width:0"><p class="eyebrow">L'anniversaire en jeux · fil rouge</p><h1>Anita <span>Party</span></h1></div></div>
   <div class="row"><button class="ghost" data-act="go" data-arg="teams">Équipes</button><button class="ghost" data-act="go" data-arg="prep">Préparer</button><button class="ghost" data-act="go" data-arg="scores">Scores</button><button class="ghost" data-act="fs">Plein écran</button></div></header>
   <section class="board" aria-label="Scores des équipes">${[0,1,2,3].map(t=>`<button class="tcard ${t===3?'t3':''}" style="--tc:var(--t${t})" data-act="go" data-arg="scores"><span class="rk ${rank(t)===1?'first':''}">${rank(t)}${rank(t)===1?'re':'e'}</span><span class="tn">${esc(teamName(t))}</span><span class="ts">${S.scores[t]}${x2()[t]?'<span class="x2b">×2 au prochain jeu</span>':''}</span><span class="tm">${esc(members(t).join(' · ')||'Aucun joueur')}</span></button>`).join('')}</section>
-  <p class="eyebrow sec">Les jeux</p><section class="games">${GAMES.filter(g=>g.id!=='roue').map(g=>`<button class="tile" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}</section><p class="eyebrow sec">Entre deux jeux et pour finir</p><section class="specials">${GAMES.filter(g=>g.id==='roue').map(g=>`<button class="tile bonus" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}<button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 47 · 10 nov. 23h00</p>`;
+  <p class="eyebrow sec">Les jeux</p><section class="games">${GAMES.filter(g=>g.id!=='roue').map(g=>`<button class="tile" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}</section><p class="eyebrow sec">Entre deux jeux et pour finir</p><section class="specials">${GAMES.filter(g=>g.id==='roue').map(g=>`<button class="tile bonus" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}<button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 49 · 10 nov. 23h10</p>`;
 };
 
 VIEWS.teams=()=>`<div class="bar">${back()}<button class="btn" data-act="shuffleTeams">Tirage au sort des équipes</button></div>
@@ -870,7 +885,7 @@ function drawWord(n){const all=lines('dessin'),L=all.length;if(!L)return '?';let
   const w=pool[Math.floor(Math.random()*pool.length)];S.used.dessin.push(w);save();return w;}
 const DCOL=['#1C1433','#FF4D6D','#19C99A','#6A5AE0','#FF9F1C'];
 function drawPickPlayer(not){const a=active().filter(p=>p.i!==not);return a.length?a[Math.floor(Math.random()*a.length)].i:null;}
-function drawRound(drawer,n){return {phase:'secret',drawer,word:drawWord(n),n,strokes:[],col:0,size:1,left:drawMs(n),runAt:null,penSeen:false,finder:null};}
+function drawRound(drawer,n,gallery){return {gallery:gallery||[],phase:'secret',drawer,word:drawWord(n),n,strokes:[],col:0,size:1,left:drawMs(n),runAt:null,penSeen:false,finder:null};}
 function dLeft(){return Math.max(0,(V.left||0)-(V.runAt?Date.now()-V.runAt:0));}
 function dStop(){if(V.runAt){V.left=dLeft();V.runAt=null;}clearInterval(V.dclk);V.dclk=null;}
 function dStart(){if(V.runAt)return;V.runAt=Date.now();const me=V;clearInterval(V.dclk);
@@ -882,7 +897,9 @@ function drawSeg(x,cv,st,from){const w=cv.width,h=cv.height,base=w*0.006;x.strok
   if(st.pts.length===1){const p=st.pts[0];x.beginPath();x.arc(p[0]*w,p[1]*h,lw(p)/2,0,7);x.fill();return;}
   for(let i=Math.max(1,from);i<st.pts.length;i++){const a=st.pts[i-1],b=st.pts[i];x.lineWidth=lw(b);x.beginPath();x.moveTo(a[0]*w,a[1]*h);x.lineTo(b[0]*w,b[1]*h);x.stroke();}}
 function drawAll(){const cv=document.getElementById('dr-cv');if(!cv)return;const x=cv.getContext('2d');x.clearRect(0,0,cv.width,cv.height);(V.strokes||[]).forEach(st=>drawSeg(x,cv,st,0));}
-function drawInit(){const cv=document.getElementById('dr-cv');if(!cv)return;const r=cv.parentElement.getBoundingClientRect();const dpr=Math.min(2,window.devicePixelRatio||1);cv.width=Math.max(10,Math.round(r.width*dpr));cv.height=Math.max(10,Math.round(r.height*dpr));drawAll();}
+function drawInit(){const cv=document.getElementById('dr-cv');if(!cv)return;const r=cv.parentElement.getBoundingClientRect();const dpr=Math.min(2,window.devicePixelRatio||1);cv.width=Math.max(10,Math.round(r.width*dpr));cv.height=Math.max(10,Math.round(r.height*dpr));V.ar=cv.width/cv.height;drawAll();
+  document.querySelectorAll('canvas[data-g]').forEach(c=>{const g=(V.gallery||[])[Number(c.dataset.g)];if(!g)return;const w=c.clientWidth||300;c.width=Math.round(w*dpr);c.height=Math.round(w*dpr/(g.ar||1.6));
+    const x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);g.strokes.forEach(st=>drawSeg(x,c,st,0));});}
 let dAct=null;
 const dPt=(e,cv)=>{const r=cv.getBoundingClientRect();return [(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height,e.pressure>0?e.pressure:0.5];};
 document.addEventListener('pointerdown',e=>{
@@ -905,13 +922,16 @@ VIEWS.dessin=()=>`<div class="bar">${back()}</div><div class="center card" style
   <p><b>1.</b> Un joueur tiré au sort reçoit un <b>mot secret</b>. Pendant qu'il le regarde, <b>tous les autres ferment les yeux</b>, car la télé montre le même écran que la tablette.</p>
   <p><b>2.</b> Il a <b>60 secondes</b> pour le dessiner sur la tablette, au stylet ou au doigt, et <b>90 secondes</b> pour les 3 derniers mots, les plus difficiles. Interdit d'écrire des lettres ou de parler.</p>
   <p><b>3.</b> Tout le monde regarde la télé et crie ses idées. Le premier qui trouve fait gagner <b>1 point à son équipe</b>, et l'équipe du dessinateur gagne aussi <b>1 point</b>.</p>
-  <p><b>4.</b> Celui qui a trouvé <b>dessine le mot suivant</b>. Une manche = <b>${DRAW_N} dessins</b>, avec des mots <b>de plus en plus difficiles</b>. Pas le droit de changer de mot.</p>
+  <p><b>4.</b> Celui qui a trouvé <b>dessine le mot suivant</b>. Une manche = <b>${DRAW_N} dessins</b>, avec des mots <b>de plus en plus difficiles</b>. Pas le droit de changer de mot. À la fin, on revoit tous les dessins.</p>
  </div>
  <button class="btn big" data-act="drawGo">Prêt ?</button></div>`;
 
 VIEWS['dessin-play']=()=>{
   const nm=esc(pname(V.drawer)),sec=Math.ceil(dLeft()/1000);let over='';
-  if(V.done)over=`<div class="dover solid"><div class="judge" style="--tc:var(--gold)"><img class="masc" style="width:120px" src="${M.joie}" alt=""><span class="wn">Fin de la manche</span><p class="muted">${DRAW_N} dessins joués</p>${miniScores()}<div class="row"><button class="btn" data-act="drawAgain">Nouvelle manche</button><button class="ghost" data-act="go" data-arg="home">Accueil</button></div></div></div>`;
+  if(V.done){const G=V.gallery||[],big=V.big!=null?G[V.big]:null;
+    const cap=g=>`<b>${esc(g.word)}</b><span>dessiné par ${esc(pname(g.drawer))} · ${g.finder!=null?'trouvé par '+esc(pname(g.finder)):'personne n\'a trouvé'}</span>`;
+    over=big?`<div class="dover solid museum"><div class="gal"><div class="gcard bigc"><span class="frame"><canvas data-g="${V.big}" style="aspect-ratio:${big.ar||1.6}"></canvas></span><p class="gcap">${cap(big)}</p></div><div class="row" style="justify-content:center"><button class="btn" data-act="drawBig" data-arg="-1">Retour à la galerie</button></div></div></div>`
+      :`<div class="dover solid museum"><div class="gal"><p class="eyebrow" style="color:var(--gold)">Fin de la manche</p><h2 style="color:#fff">Le musée des chefs-d'œuvre</h2><div class="ggrid">${G.map((g,i)=>`<button class="gcard" data-act="drawBig" data-arg="${i}" aria-label="Agrandir le dessin ${i+1}"><span class="frame"><canvas data-g="${i}" style="aspect-ratio:${g.ar||1.6}"></canvas></span><span class="gcap">${cap(g)}</span></button>`).join('')}</div>${miniScores()}<div class="row" style="justify-content:center"><button class="btn" data-act="drawAgain">Nouvelle manche</button><button class="ghost" data-act="go" data-arg="home">Accueil</button></div></div></div>`;}
   else if(V.phase==='secret')over=`<div class="dover solid"><div class="judge" style="--tc:var(--t${S.team[V.drawer]})"><p class="muted">Dessin ${V.n} / ${DRAW_N} · ${['très facile','facile','facile','moyen','moyen','difficile','difficile','très difficile'][Math.min(7,Math.floor((V.n-1)*8/DRAW_N))]}</p><span class="wn">${nm} dessine</span><p class="muted" style="max-width:44ch">Tous les autres ferment les yeux ! Le mot s'affiche aussi sur la télé.</p><button class="btn" data-hold="word">Maintiens appuyé pour voir ton mot</button><p class="answer" id="secret-word">• • • • •</p><div class="row"><button class="btn good" data-act="drawStart">J'ai vu, je dessine</button></div></div></div>`;
   else if(V.phase==='found')over=`<div class="dover"><div class="judge" style="--tc:var(--gold);max-width:760px"><span class="wn">Qui a trouvé ?</span><div class="grid-names">${active().filter(p=>p.i!==V.drawer).map(p=>`<button class="nbtn" style="--tc:var(--t${S.team[p.i]})" data-act="drawWho" data-arg="${p.i}">${esc(p.n)}</button>`).join('')}</div><button class="ghost" data-act="drawContinue">Fausse alerte, on continue</button></div></div>`;
   else if(V.phase==='result'){const f=V.finder;
@@ -1036,7 +1056,8 @@ const ACT={
  drawContinue:()=>{V.phase='draw';render();dStart();},
  drawWho:a=>{const f=Number(a);V.finder=f;addPts(S.team[f],1,'Dessin · trouvé par '+pname(f));addPts(S.team[V.drawer],1,'Dessin · dessiné par '+pname(V.drawer));sGood();react('joie');V.phase='result';render();},
  drawSkip:()=>{if(V.phase!=='draw')return;dStop();V.finder=null;V.phase='result';render();},
- drawNext:()=>{if(V.n>=DRAW_N){V.done=true;render();return;}const nd=V.finder!=null?V.finder:drawPickPlayer(V.drawer);go('dessin-play',drawRound(nd,V.n+1));},
+ drawNext:()=>{const g=(V.gallery||[]).concat([{word:V.word,drawer:V.drawer,finder:V.finder,strokes:V.strokes,ar:V.ar||1.6}]);if(V.n>=DRAW_N){V.gallery=g;V.done=true;sFanfare();render();return;}const nd=V.finder!=null?V.finder:drawPickPlayer(V.drawer);go('dessin-play',drawRound(nd,V.n+1,g));},
+ drawBig:a=>{V.big=Number(a)>=0?Number(a):null;render();},
  drawAgain:()=>go('dessin'),
  wheelTeam:a=>{if(V.spinning)return;V.team=Number(a);render();},
  wheelReset:()=>{V.res=null;V.team=null;render();},
