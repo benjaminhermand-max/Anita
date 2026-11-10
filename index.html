@@ -143,6 +143,8 @@ textarea{min-height:180px;font-size:15px;line-height:1.5;resize:vertical}
 #bz{position:fixed;inset:0;background:var(--night);color:#fff;z-index:50;touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden}
 .zone{position:absolute;display:flex;align-items:center;justify-content:center;background:var(--tc);border:4px solid #fff;border-radius:36px;box-shadow:0 8px 0 rgba(0,0,0,.45);font-family:var(--fd);font-weight:800;font-size:clamp(22px,4vmin,44px);color:var(--ink);transition:transform .12s,opacity .2s,box-shadow .2s}
 .zone span{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;padding:6px}
+.zone.long{font-size:clamp(15px,2.5vmin,26px);line-height:1.05}
+.zone span{max-width:100%;box-sizing:border-box;overflow-wrap:anywhere}
 .zone small{font-family:var(--fb);font-weight:700;font-size:15px;letter-spacing:.02em}
 .zone.armed{animation:pulse 1.1s ease-in-out infinite}
 .zone.win{transform:scale(1.06);box-shadow:0 0 0 12px rgba(255,255,255,.22),0 8px 0 rgba(0,0,0,.45)}
@@ -709,13 +711,13 @@ VIEWS.home=()=>{
   return `<header class="top"><div class="brand"><img class="masc-head" src="${M.salut}" alt=""><div class="stack" style="gap:4px;min-width:0"><p class="eyebrow">L'anniversaire en jeux · fil rouge</p><h1>Anita <span>Party</span></h1></div></div>
   <div class="row"><button class="ghost" data-act="go" data-arg="teams">Équipes</button><button class="ghost" data-act="go" data-arg="prep">Préparer</button><button class="ghost" data-act="go" data-arg="scores">Scores</button><button class="ghost" data-act="fs">Plein écran</button></div></header>
   <section class="board" aria-label="Scores des équipes">${[0,1,2,3].map(t=>`<button class="tcard ${t===3?'t3':''}" style="--tc:var(--t${t})" data-act="go" data-arg="scores"><span class="rk ${rank(t)===1?'first':''}">${rank(t)}${rank(t)===1?'re':'e'}</span><span class="tn">${esc(teamName(t))}</span><span class="ts">${S.scores[t]}${x2()[t]?'<span class="x2b">×2 au prochain jeu</span>':''}</span><span class="tm">${esc(members(t).join(' · ')||'Aucun joueur')}</span></button>`).join('')}</section>
-  <p class="eyebrow sec">Les jeux</p><section class="games">${GAMES.filter(g=>g.id!=='roue').map(g=>`<button class="tile" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}</section><p class="eyebrow sec">Entre deux jeux et pour finir</p><section class="specials">${GAMES.filter(g=>g.id==='roue').map(g=>`<button class="tile bonus" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}<button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 49 · 10 nov. 23h10</p>`;
+  <p class="eyebrow sec">Les jeux</p><section class="games">${GAMES.filter(g=>g.id!=='roue').map(g=>`<button class="tile" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}</section><p class="eyebrow sec">Entre deux jeux et pour finir</p><section class="specials">${GAMES.filter(g=>g.id==='roue').map(g=>`<button class="tile bonus" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}<button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 50 · 10 nov. 23h20</p>`;
 };
 
 VIEWS.teams=()=>`<div class="bar">${back()}<button class="btn" data-act="shuffleTeams">Tirage au sort des équipes</button></div>
  <div class="stack"><h2>Joueurs et équipes</h2><p class="muted">Touche une pastille pour changer un joueur d'équipe. Laisse un nom vide si la personne ne joue pas.</p>
  <div class="cols2"><div class="stack">${S.players.map((n,i)=>`<div class="prow"><input type="text" id="p${i}" data-input="player" data-arg="${i}" value="${esc(n)}" aria-label="Joueur ${i+1}"><div class="dots">${[0,1,2,3].map(t=>`<button class="dot ${S.team[i]===t?'on':''}" style="--tc:var(--t${t})" data-act="setTeam" data-arg="${i},${t}" aria-label="${esc(teamName(t))}"></button>`).join('')}</div></div>`).join('')}</div>
- <div class="stack"><h3>Noms des équipes</h3>${[0,1,2,3].map(t=>`<label class="f" style="color:var(--t${t})">Équipe ${t+1}<input type="text" id="tn${t}" data-input="teamName" data-arg="${t}" value="${esc(teamName(t))}"></label>`).join('')}
+ <div class="stack"><h3>Noms des équipes</h3>${[0,1,2,3].map(t=>`<label class="f" style="color:var(--t${t})">Équipe ${t+1}<input type="text" id="tn${t}" data-input="teamName" data-arg="${t}" value="${esc(teamName(t))}"></label><button class="ghost" style="align-self:flex-start;margin-top:-8px" data-act="teamGen" data-arg="${t}">Générer un nom avec ${esc(members(t).join(', ')||'…')}</button>`).join('')}
  <p class="muted">${[0,1,2,3].map(t=>`${esc(teamName(t))} (${members(t).length})`).join(' · ')}</p></div></div></div>`;
 
 VIEWS.scores=()=>`<div class="bar">${back()}</div><div class="stack"><h2>Scores</h2>
@@ -784,6 +786,7 @@ function zones(mode,teams){
   const pos=mode===4?['tl','tr','bl','br']:['zt','zb'];const b=V.bz;
   return teams.map((t,i)=>{const c=[mode===4?'z4':'z2',pos[i]];const lk=b.locked.includes(t);
     if(b.winner===t)c.push('win');else if(lk)c.push('locked');else if(b.winner!==null)c.push('dim');else if(b.armed)c.push('armed');
+    if(teamName(t).length>10)c.push('long');
     return `<div class="zone ${c.join(' ')}" data-buzz="${t}" style="--tc:var(--t${t})"><span>${esc(teamName(t))}<small>${lk?'Bloquée':b.armed&&b.winner===null?'Buzz !':''}</small></span></div>`;}).join('');
 }
 function onBuzz(t){const b=V.bz;if(!b||!b.armed||b.winner!==null||b.locked.includes(t))return;if(!(V.teams||[0,1,2,3]).includes(t))return;b.winner=t;if(view==='blind'){clkStop();if(isSpIt()&&!V.ended)spPause();}sBuzz(t);react('surprise');render();}
@@ -876,6 +879,19 @@ VIEWS.finale=()=>{
   ${step<4?`<button class="btn big" data-act="finNext">Révéler la ${labels[step]}</button>`:'<button class="ghost" data-act="finConfetti">Encore des confettis</button>'}</div>`;
 };
 
+/* ---------- Générateur de noms d'équipe ---------- */
+const TN_NOUNS={a:['Abricots','Aventuriers','Artichauts','As'],b:['Bananes','Boss','Biscottes','Bolides'],c:['Cactus','Champions','Cornichons','Comètes'],d:['Dragons','Dynamites','Dauphins'],e:['Éclairs','Étoiles','Écureuils'],f:['Flamants','Fusées','Furets'],g:['Gaufres','Guépards','Génies'],h:['Hérissons','Homards','Héros'],i:['Iguanes','Invincibles'],j:['Jaguars','Jokers','Jongleurs'],k:['Koalas','Kiwis','Kangourous'],l:['Lamas','Licornes','Loups'],m:['Marmottes','Meringues','Mousquetaires'],n:['Ninjas','Nougats','Narvals'],o:['Ouragans','Oursons','Olives'],p:['Pingouins','Pirates','Pépites'],q:['Quokkas','Quiches'],r:['Requins','Raclettes','Renards'],s:['Sardines','Samouraïs','Sorbets'],t:['Tornades','Tartiflettes','Tigres'],u:['Ukulélés','Ultras'],v:['Vikings','Vipères','Volcans'],w:['Wapitis','Wasabis'],x:['Xylophones'],y:['Yétis','Yaourts'],z:['Zèbres','Zinzins']};
+const tnPlain=x=>x.normalize('NFD').replace(/[̀-ͯ]/g,'');
+const tnRand=a=>a[Math.floor(Math.random()*a.length)];
+function tnSyl(name){const w=tnPlain(name.trim().split(/\s+/)[0]).replace(/[^A-Za-z]/g,'');if(!w)return '';let m=w.match(/^[^aeiouy]*[aeiouy]+/i);let s0=m?m[0]:w.slice(0,2);
+  if(s0.length<2&&w.length>1)s0+=w[1];return s0.slice(0,4).toLowerCase();}
+function tnDe(name){return (/^[aeiouh]/i.test(tnPlain(name))?'d\'':'de ')+name;}
+function teamNameIdeas(names){const first=names.map(n=>n.trim().split(/\s+/)[0]).filter(Boolean);if(!first.length)return [];const out=[];
+  const syl=shuffle(names.map(tnSyl).filter(Boolean)).join('');if(syl.length>=4)out.push('Les '+syl[0].toUpperCase()+syl.slice(1));
+  if(first.length>1)out.push('Les '+first.map(n=>tnPlain(n)[0].toUpperCase()).join('.')+'.');
+  first.forEach((n,i)=>{const nouns=TN_NOUNS[tnPlain(n)[0].toLowerCase()];if(nouns){out.push('Les '+tnRand(nouns)+' '+tnDe(names[i].trim()));}});
+  const any=tnRand(names).trim();out.push(any+' & Cie');out.push('La bande '+(/^[aeiouh]/i.test(tnPlain(any))?'d\'':'à ')+any);
+  return out.filter(x=>x.length<=24);}
 /* ---------- Dessine-moi ---------- */
 const DRAW_MS=60000,DRAW_HARD_MS=90000,DRAW_N=8,DSIZE=[0.45,1,2.4];
 const drawMs=n=>n>=6?DRAW_HARD_MS:DRAW_MS; // les 3 derniers dessins (difficiles) ont 90 s
@@ -971,6 +987,7 @@ function wheelApply(i){const k=WSEG[i].k,t=V.team,tn=teamName(t),others=[0,1,2,3
 const ACT={
  go:a=>{ if(a==='photo'){go('photo-intro');return;} if(a==='blind'){startBlind();return;} go(a); },
  fs:()=>{try{const d=document.documentElement;(d.requestFullscreen||d.webkitRequestFullscreen).call(d);}catch(e){toast('Plein écran indisponible ici');}},
+ teamGen:a=>{const t=Number(a),m=members(t);if(!m.length){toast('Cette équipe n\'a pas encore de joueur');return;}const ideas=teamNameIdeas(m).filter(x=>x!==S.teamNames[t]);if(!ideas.length){toast('Pas d\'idée pour ces prénoms');return;}S.teamNames[t]=tnRand(ideas);save();render();},
  shuffleTeams:()=>{const ids=shuffle(active().map(p=>p.i));ids.forEach((pi,k)=>S.team[pi]=k%4);save();render();toast('Équipes tirées au sort');},
  setTeam:a=>{const [pi,t]=a.split(',').map(Number);S.team[pi]=t;save();render();},
  sc:a=>{const [t,d]=a.split(',').map(Number);addPts(t,d,'Correction manuelle');render();},
