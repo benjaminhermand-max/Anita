@@ -218,6 +218,7 @@ textarea{min-height:180px;font-size:15px;line-height:1.5;resize:vertical}
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:80}
 #toast{visibility:hidden;position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(160%);background:var(--ink);color:#fff;font-weight:700;padding:12px 20px;border-radius:14px;z-index:90;transition:transform .25s;max-width:calc(100% - 32px);text-align:center}
 #toast.show{visibility:visible;transform:translateX(-50%) translateY(0)}
+.ver{margin-top:18px;text-align:center;font-size:12px;color:var(--muted)}
 .hist{font-size:14px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
 @media (max-width:640px){.board{grid-template-columns:repeat(2,minmax(0,1fr))}.tcard .ts{font-size:40px}.masc-head{width:70px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}#react.show{opacity:1;transform:translate(-50%,-50%)}}
@@ -599,7 +600,7 @@ VIEWS.home=()=>{
   <div class="row"><button class="ghost" data-act="go" data-arg="teams">Équipes</button><button class="ghost" data-act="go" data-arg="prep">Préparer</button><button class="ghost" data-act="go" data-arg="scores">Scores</button><button class="ghost" data-act="fs">Plein écran</button></div></header>
   <section class="board" aria-label="Scores des équipes">${[0,1,2,3].map(t=>`<button class="tcard ${t===3?'t3':''}" style="--tc:var(--t${t})" data-act="go" data-arg="scores"><span class="rk ${rank(t)===1?'first':''}">${rank(t)}${rank(t)===1?'re':'e'}</span><span class="tn">${esc(teamName(t))}</span><span class="ts">${S.scores[t]}</span><span class="tm">${esc(members(t).join(' · ')||'Aucun joueur')}</span></button>`).join('')}</section>
   <section class="games">${GAMES.map(g=>`<button class="tile" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}
-  <button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section>`;
+  <button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 31 · 10 nov. 10h40</p>`;
 };
 
 VIEWS.teams=()=>`<div class="bar">${back()}<button class="btn" data-act="shuffleTeams">Tirage au sort des équipes</button></div>
