@@ -199,6 +199,7 @@ textarea{min-height:180px;font-size:15px;line-height:1.5;resize:vertical}
 @keyframes spin{to{transform:rotate(360deg)}}
 .bt-time{font-family:var(--fd);font-weight:800;font-size:34px;line-height:1;color:var(--gold);font-variant-numeric:tabular-nums}
 .bt-time.low{color:#FF8FA3}
+#z-time{font-size:22px}
 .sp-line{font-size:13px;font-weight:700;color:#B7AEDD;max-width:46ch}
 .sp-line.err{color:#FF8FA3}
 /* Réaction de la mascotte */
@@ -456,7 +457,7 @@ let view='home',V={};
 const BUZZ_VIEWS=['duel-play','blind','photo'];
 function hist(v){try{const cur=history.state&&history.state.v;if(v==='home'){if(cur&&cur!=='home')history.replaceState({v:'home'},'');}else if(!cur||cur==='home')history.pushState({v:v},'');else history.replaceState({v:v},'');}catch(e){}}
 addEventListener('popstate',()=>{if(view!=='home'){if(view==='blind'){clearInterval(V.clk);if(isSpIt())spPause();}clearInterval(V&&V.tick);view='home';V={};render();try{window.scrollTo(0,0);}catch(e){}}});
-function go(v,init){if(view==='blind'){clearInterval(V.clk);if(v!=='blind'&&isSpIt())spPause();}hist(v);view=v;V=init||{};render();try{window.scrollTo(0,0);}catch(e){}}
+function go(v,init){if(V&&V.zclk)clearInterval(V.zclk);if(view==='blind'){clearInterval(V.clk);if(v!=='blind'&&isSpIt())spPause();}hist(v);view=v;V=init||{};render();try{window.scrollTo(0,0);}catch(e){}}
 function render(){
   const isBz=BUZZ_VIEWS.includes(view);
   $('#bz').hidden=!isBz;$('#app').hidden=isBz;
@@ -602,7 +603,7 @@ VIEWS.home=()=>{
   <div class="row"><button class="ghost" data-act="go" data-arg="teams">Équipes</button><button class="ghost" data-act="go" data-arg="prep">Préparer</button><button class="ghost" data-act="go" data-arg="scores">Scores</button><button class="ghost" data-act="fs">Plein écran</button></div></header>
   <section class="board" aria-label="Scores des équipes">${[0,1,2,3].map(t=>`<button class="tcard ${t===3?'t3':''}" style="--tc:var(--t${t})" data-act="go" data-arg="scores"><span class="rk ${rank(t)===1?'first':''}">${rank(t)}${rank(t)===1?'re':'e'}</span><span class="tn">${esc(teamName(t))}</span><span class="ts">${S.scores[t]}</span><span class="tm">${esc(members(t).join(' · ')||'Aucun joueur')}</span></button>`).join('')}</section>
   <section class="games">${GAMES.map(g=>`<button class="tile" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}
-  <button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 33 · 10 nov. 10h50</p>`;
+  <button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 34 · 10 nov. 10h55</p>`;
 };
 
 VIEWS.teams=()=>`<div class="bar">${back()}<button class="btn" data-act="shuffleTeams">Tirage au sort des équipes</button></div>
@@ -718,7 +719,7 @@ VIEWS.photo=()=>{
   let mid;
   if(V.show)mid=`<p class="qbig">${p.anita?'C\'est Anita !':(p.label?'C\'est… '+esc(p.label)+' !':'Ce n\'est pas Anita !')}</p><button class="btn" data-act="photoNext">${V.n<3?'Photo suivante':'Fin de la manche'}</button>`;
   else if(b.winner!==null)mid=`<div class="judge" style="--tc:var(--t${b.winner})"><span class="wn">${esc(teamName(b.winner))} !</span><p class="muted">Anita ou pas Anita ? Et sinon, qu'est-ce que c'est ?</p><div class="row"><button class="btn good" data-act="photoGood">Juste +${ZP[V.z]}</button><button class="btn bad" data-act="photoBad">Faux, +1 aux autres</button></div></div>`;
-  else mid=`<div class="row" style="justify-content:center">${V.z<ZMAX?`<button class="btn" data-act="photoZoom">Dézoomer</button>`:''}<button class="ghost" data-act="photoReveal">Révéler</button></div>`;
+  else mid=`${V.z<ZMAX?`<p class="bt-time" id="z-time">Dézoom dans ${Math.max(0,Math.ceil((V.zLeft??AUTOZOOM_MS)/1000))} s</p>`:''}<div class="row" style="justify-content:center">${V.z<ZMAX?`<button class="btn" data-act="photoZoom">Dézoomer maintenant</button>`:''}<button class="ghost" data-act="photoReveal">Révéler</button></div>`;
   return zones(4,[0,1,2,3])+`<div class="bcenter c4"><span class="pill">Photo ${V.n} / 3 · ${V.show?'Réponse':ZP[V.z]+' point'+(ZP[V.z]>1?'s':'')+' en jeu'}</span>
    <div class="zoombox" style="width:${Math.round(W)}px;height:${Math.round(H)}px"><img src="${p.data}" alt="Photo mystère" style="transform-origin:${p.fx*100}% ${p.fy*100}%;transform:scale(${sc})"></div>
    <div class="lvl" aria-hidden="true">${ZL.map((_,i)=>`<i class="${i<=lvl?'on':''}"></i>`).join('')}</div>${mid}${miniScores()}</div><button class="ghost quit" data-act="go" data-arg="home">Quitter</button>`;
@@ -819,11 +820,11 @@ const ACT={
  blindNext:()=>{V.peek=false;clkStop();if(V.n>=5){if(isSpIt())spPause();V.done=true;render();return;}if(isSpIt())spPause();V.it=pickBlind();V.n++;V.show=false;V.ended=false;V.left=EXTRAIT_MS;V.bz=newBz(false);render();},
  blindAgain:()=>startBlind(),
 
- photoZoom:()=>{if(V.z<ZMAX)V.z++;tone(440+V.z*120,.12,'sine');render();},
+ photoZoom:()=>{clearInterval(V.zclk);if(V.z<ZMAX)V.z++;tone(440+V.z*120,.12,'sine');render();},
  photoGood:()=>{const w=V.bz.winner;addPts(w,ZP[V.z],'Anita ou pas Anita ?');sGood();react('joie');V.show=true;V.bz.armed=false;V.bz.winner=null;render();},
  photoBad:()=>{const w=V.bz.winner;[0,1,2,3].filter(t=>t!==w).forEach(t=>addPts(t,1,'Anita ou pas · erreur adverse'));sBad();toast('Les 3 autres équipes +1');V.show=true;V.bz.armed=false;V.bz.winner=null;react('oups');render();},
  photoReveal:()=>{V.show=true;V.bz.armed=false;V.bz.winner=null;render();},
- photoNext:()=>{if(V.n>=3){V.done=true;render();return;}V.it=pick('photo',gamePhotos());V.n++;V.z=0;V.show=false;V.bz=newBz(true);render();},
+ photoNext:()=>{if(V.n>=3){V.done=true;render();return;}V.it=pick('photo',gamePhotos());V.n++;V.z=0;V.show=false;V.bz=newBz(true);render();zoomTimer();},
  photoGo:()=>startPhoto(),
  photoAgain:()=>startPhoto(),
 
@@ -855,7 +856,14 @@ const ACT={
  finConfetti:()=>{confetti();sFanfare();}
 };
 function startBlind(){const it=pickBlind();keepAwake();go('blind',{it,n:1,bz:newBz(false)});}
-function startPhoto(){const it=pick('photo',gamePhotos());keepAwake();go('photo',{it,n:1,z:0,bz:newBz(true)});}
+const AUTOZOOM_MS=8000;
+function zoomTimer(){clearInterval(V.zclk);if(V.z>=ZMAX)return;V.zLeft=AUTOZOOM_MS;let last=Date.now();const me=V;
+  V.zclk=setInterval(()=>{if(V!==me||view!=='photo'){clearInterval(me.zclk);return;}const now=Date.now(),dt=now-last;last=now;
+    if(V.show||V.z>=ZMAX){clearInterval(V.zclk);return;}
+    if(V.bz.winner!==null)return; // chrono en pause pendant qu'une équipe répond
+    V.zLeft-=dt;const el=document.getElementById('z-time');if(el)el.textContent='Dézoom dans '+Math.max(0,Math.ceil(V.zLeft/1000))+' s';
+    if(V.zLeft<=0){clearInterval(V.zclk);ACT.photoZoom();}},200);}
+function startPhoto(){const it=pick('photo',gamePhotos());keepAwake();go('photo',{it,n:1,z:0,bz:newBz(true)});zoomTimer();}
 
 /* ---------- Événements ---------- */
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(el&&!el.disabled){ac();const f=ACT[el.dataset.act];if(f)f(el.dataset.arg,el,e);return;}
