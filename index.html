@@ -151,8 +151,15 @@ textarea{min-height:180px;font-size:15px;line-height:1.5;resize:vertical}
 .z2{left:calc(14px + env(safe-area-inset-left,0px));right:calc(14px + env(safe-area-inset-right,0px));height:16vh}
 .zt{top:calc(14px + env(safe-area-inset-top,0px))}
 .zb{bottom:calc(14px + env(safe-area-inset-bottom,0px))}
-.bcenter{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;overflow:auto;padding:8px}
+.bcenter{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:safe center;gap:14px;text-align:center;overflow:auto;padding:8px}
 .c4{top:calc(60px + env(safe-area-inset-top,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));left:calc(23vmin + 32px);right:calc(23vmin + 32px)}
+.c2 .qbig{font-size:clamp(20px,3.6vmin,34px)}
+.c2 .stack{gap:6px}
+#bz .judge .answer{color:var(--t3)}
+.c2{gap:10px}
+.c2 .judge{padding:10px 16px;gap:8px}
+.c2 .judge .wn{font-size:clamp(20px,3.4vmin,30px)}
+.c2 .judge .btn{font-size:17px;padding:10px 16px;min-height:46px}
 .c2{left:16px;right:16px;top:calc(16vh + 30px);bottom:calc(16vh + 30px)}
 .bcenter .qbig{font-size:clamp(22px,4vmin,42px)}
 .bcenter .muted{color:#B7AEDD}
@@ -653,10 +660,11 @@ VIEWS['duel-play']=()=>{
   if(V.done){const w=V.pts[0]===V.pts[1]?null:(V.pts[0]>V.pts[1]?A:B);
     return zones(2,V.teams)+`<div class="bcenter c2"><p class="eyebrow">Fin du duel</p><p class="qbig">${w===null?'Égalité !':esc(teamName(w))+' gagne le duel !'}</p><p class="muted">${esc(teamName(A))} ${V.pts[0]} · ${V.pts[1]} ${esc(teamName(B))}${w!==null?' · +2 points de bonus':''}</p><div class="row"><button class="btn" data-act="duelAgain">Nouveau duel</button><button class="ghost" data-act="go" data-arg="home">Accueil</button></div></div>`;}
   const it=V.it;
-  const face=`<span class="pill">${esc(it.cat)} · ${V.n} / 5</span><p class="qbig">${esc(it.q)}</p>${V.show?`<p class="answer">${esc(it.a)}</p>`:''}`;
+  const face=`${b.winner!==null?'':`<span class="pill">${esc(it.cat)} · ${V.n} / 5</span>`}<p class="qbig">${esc(it.q)}</p>`;
+  const ans=V.show?`<p class="answer duel-ans">Réponse : ${esc(it.a)}</p>`:'';
   let ctl='';
-  if(b.winner!==null){ctl=`<div class="judge" style="--tc:var(--t${b.winner})"><span class="wn">${esc(teamName(b.winner))} répond !</span><div class="row"><button class="btn good" data-act="duelGood">Juste +1</button><button class="btn bad" data-act="duelBad">Faux, +1 à l'adversaire</button></div><button class="ghost" data-act="duelShow">${V.show?'Masquer':'Voir'} la réponse</button></div>`;}
-  else ctl=`<div class="row" style="justify-content:center"><button class="ghost" data-act="duelShow">${V.show?'Masquer':'Voir'} la réponse</button><button class="ghost" data-act="duelNext">${V.n<5?'Question suivante':'Terminer'}</button><button class="ghost" data-act="go" data-arg="home">Quitter</button></div>`;
+  if(b.winner!==null){ctl=`<div class="judge" style="--tc:var(--t${b.winner})"><span class="wn">${esc(teamName(b.winner))} répond !</span>${ans}<div class="row"><button class="btn good" data-act="duelGood">Juste +1</button><button class="btn bad" data-act="duelBad">Faux, +1 à l'adversaire</button><button class="ghost" data-act="duelShow">${V.show?'Masquer':'Voir'} la réponse</button></div></div>`;}
+  else ctl=`${ans}<div class="row" style="justify-content:center"><button class="ghost" data-act="duelShow">${V.show?'Masquer':'Voir'} la réponse</button><button class="ghost" data-act="duelNext">${V.n<5?'Question suivante':'Terminer'}</button><button class="ghost" data-act="go" data-arg="home">Quitter</button></div>`;
   return zones(2,V.teams)+`<div class="bcenter c2"><div class="mirror stack" style="align-items:center">${face}</div><div class="mini"><b style="--tc:var(--t${A})">${V.pts[0]}</b><b style="--tc:var(--t${B})">${V.pts[1]}</b></div>${ctl}<div class="stack" style="align-items:center">${face}</div></div>`;
 };
 
