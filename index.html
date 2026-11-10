@@ -62,6 +62,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .tcard.t3{color:#fff}
 .tcard .tn{font-family:var(--fd);font-weight:800;font-size:22px}
 .tcard .ts{font-family:var(--fd);font-weight:800;font-size:58px;line-height:.9;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.x2b{display:inline-block;vertical-align:middle;margin-left:10px;background:var(--ink);color:var(--gold);font:800 13px var(--fd);letter-spacing:0;padding:5px 10px;border-radius:99px;transform:rotate(-4deg)}
 .tcard .tm{font-size:14px;font-weight:500;overflow-wrap:anywhere}
 .tcard .rk{position:absolute;top:-14px;right:14px;background:var(--ink);color:#fff;font:800 14px var(--fd);padding:5px 12px;border-radius:99px}
 .tcard .rk.first{color:var(--gold)}
@@ -370,14 +371,7 @@ Un barbecue
 Une tente
 Un karaoké
 Un feu d'artifice
-Une valise`,
-gages:`Chanter « Joyeux anniversaire » en canon
-Porter un toast à Anita
-Danser 15 secondes sans musique
-Faire un compliment à chaque équipe adverse
-Parler avec un accent jusqu'au prochain jeu
-Raconter votre meilleur souvenir avec Anita en 20 secondes
-Faire le tour de la table en file indienne`
+Une valise`
 };
 const TEAM_DEF=['Framboise','Menthe','Citron','Myrtille'];
 function defaults(){
@@ -442,7 +436,10 @@ const active=()=>S.players.map((n,i)=>({n:n.trim(),i})).filter(p=>p.n);
 const pname=i=>S.players[i]||'?';
 const teamName=t=>S.teamNames[t]||TEAM_DEF[t];
 const members=t=>active().filter(p=>S.team[p.i]===t).map(p=>p.n);
-function addPts(t,n,why){if(!n)return;S.scores[t]=(S.scores[t]||0)+n;S.history.unshift({t,n,why});S.history=S.history.slice(0,40);save();}
+const GAME_OF={plus:'plus',duel:'duel','duel-play':'duel',blind:'blind','photo-intro':'photo',photo:'photo',taupe:'taupe',kahoot:'kahoot',dessin:'dessin','dessin-play':'dessin'};
+function x2(){if(!Array.isArray(S.x2))S.x2=[0,0,0,0];return S.x2;}
+function x2Expire(v){const g=GAME_OF[v]||null;let ch=false;x2().forEach((x,i)=>{if(typeof x==='string'&&x!==g){S.x2[i]=0;ch=true;}});if(ch)save();}
+function addPts(t,n,why){if(!n)return;const g=GAME_OF[view];if(g&&n>0&&x2()[t]){if(S.x2[t]===1)S.x2[t]=g;if(S.x2[t]===g){n*=2;why+=' (×2)';toast(teamName(t)+' : points doublés, +'+n);}}S.scores[t]=(S.scores[t]||0)+n;S.history.unshift({t,n,why});S.history=S.history.slice(0,40);save();}
 
 /* ---------- Photos (IndexedDB) ---------- */
 let DB=null,PHOTOS=[];
@@ -508,8 +505,8 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 let view='home',V={};
 const BUZZ_VIEWS=['duel-play','blind','photo','dessin-play'];
 function hist(v){try{const cur=history.state&&history.state.v;if(v==='home'){if(cur&&cur!=='home')history.replaceState({v:'home'},'');}else if(!cur||cur==='home')history.pushState({v:v},'');else history.replaceState({v:v},'');}catch(e){}}
-addEventListener('popstate',()=>{if(view!=='home'){if(view==='blind'){clearInterval(V.clk);if(isSpIt())spPause();}clearInterval(V&&V.tick);view='home';V={};render();try{window.scrollTo(0,0);}catch(e){}}});
-function go(v,init){if(V&&V.zclk)clearInterval(V.zclk);if(view==='blind'){clearInterval(V.clk);if(v!=='blind'&&isSpIt())spPause();}hist(v);view=v;V=init||{};render();try{window.scrollTo(0,0);}catch(e){}}
+addEventListener('popstate',()=>{if(view!=='home'){if(view==='blind'){clearInterval(V.clk);if(isSpIt())spPause();}clearInterval(V&&V.tick);view='home';V={};x2Expire('home');render();try{window.scrollTo(0,0);}catch(e){}}});
+function go(v,init){if(V&&V.zclk)clearInterval(V.zclk);if(view==='blind'){clearInterval(V.clk);if(v!=='blind'&&isSpIt())spPause();}hist(v);view=v;V=init||{};x2Expire(v);render();try{window.scrollTo(0,0);}catch(e){}}
 function render(){
   const isBz=BUZZ_VIEWS.includes(view);
   $('#bz').hidden=!isBz;$('#app').hidden=isBz;
@@ -646,7 +643,7 @@ const GAMES=[
  {id:'taupe',tint:'#EFE4D2',m:'taupe',name:'La Taupe',glyph:'?!',desc:'Tout le monde a le même mot, sauf un.',who:'Les 12',left:()=>remaining('taupe',lines('taupe'))+' mots'},
  {id:'kahoot',tint:'#FFDCE3',m:'joie',name:'Kahoot',glyph:'K',desc:'Chacun sur son téléphone, puis on reporte les points.',who:'Les 12',left:()=>'Podium → points'},
  {id:'dessin',tint:'#CFF5E9',m:'salut',name:'Dessine-moi',desc:'Un joueur dessine, le premier qui trouve marque.',who:'Les 12',left:()=>remaining('dessin',lines('dessin'))+' mots'},
- {id:'roue',tint:'#FFEDB8',m:'surprise',name:'La Roue des bonus',desc:'Entre deux plats : points, vol, cadeau ou gage.',who:'1 équipe',left:()=>'8 cases'}
+ {id:'roue',tint:'#FFEDB8',m:'surprise',name:'La Roue des bonus',desc:'Entre deux plats : points, vol, cadeau ou points doublés.',who:'1 équipe',left:()=>'8 cases'}
 ];
 const VIEWS={};
 
@@ -655,9 +652,9 @@ VIEWS.home=()=>{
   const rank=t=>order.indexOf(t)+1;
   return `<header class="top"><div class="brand"><img class="masc-head" src="${M.salut}" alt=""><div class="stack" style="gap:4px;min-width:0"><p class="eyebrow">L'anniversaire en jeux · fil rouge</p><h1>Anita <span>Party</span></h1></div></div>
   <div class="row"><button class="ghost" data-act="go" data-arg="teams">Équipes</button><button class="ghost" data-act="go" data-arg="prep">Préparer</button><button class="ghost" data-act="go" data-arg="scores">Scores</button><button class="ghost" data-act="fs">Plein écran</button></div></header>
-  <section class="board" aria-label="Scores des équipes">${[0,1,2,3].map(t=>`<button class="tcard ${t===3?'t3':''}" style="--tc:var(--t${t})" data-act="go" data-arg="scores"><span class="rk ${rank(t)===1?'first':''}">${rank(t)}${rank(t)===1?'re':'e'}</span><span class="tn">${esc(teamName(t))}</span><span class="ts">${S.scores[t]}</span><span class="tm">${esc(members(t).join(' · ')||'Aucun joueur')}</span></button>`).join('')}</section>
+  <section class="board" aria-label="Scores des équipes">${[0,1,2,3].map(t=>`<button class="tcard ${t===3?'t3':''}" style="--tc:var(--t${t})" data-act="go" data-arg="scores"><span class="rk ${rank(t)===1?'first':''}">${rank(t)}${rank(t)===1?'re':'e'}</span><span class="tn">${esc(teamName(t))}</span><span class="ts">${S.scores[t]}${x2()[t]?'<span class="x2b">×2 au prochain jeu</span>':''}</span><span class="tm">${esc(members(t).join(' · ')||'Aucun joueur')}</span></button>`).join('')}</section>
   <section class="games">${GAMES.map(g=>`<button class="tile" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}
-  <button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 35 · 10 nov. 11h50</p>`;
+  <button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 36 · 10 nov. 12h35</p>`;
 };
 
 VIEWS.teams=()=>`<div class="bar">${back()}<button class="btn" data-act="shuffleTeams">Tirage au sort des équipes</button></div>
@@ -676,7 +673,7 @@ VIEWS.prep=()=>{
   return `<div class="bar">${back()}<button class="ghost" data-act="resetUsed">Rejouer toutes les questions</button></div>
   <div class="stack"><h2>Préparer le contenu</h2><p class="muted">Tout est enregistré sur cette tablette au fur et à mesure. Le contenu actuel est un exemple à remplacer.</p>
   ${spPrepCard()}<div class="cols2">${ta('plus','Qui est le plus…','Une question par ligne.')}${ta('duel','Le Duel','Une ligne par question, au format Catégorie | Question | Réponse')}
-  ${ta('blind','Blind test','Une ligne par chanson, au format Titre — Artiste. La musique se lance depuis ton téléphone sur l\'enceinte.')}${ta('taupe','La Taupe','Un mot par ligne. La Taupe ne reçoit pas le mot.')}${ta('dessin','Dessine-moi','Un mot ou une expression à dessiner par ligne.')}${ta('gages','Gages de la Roue','Un gage par ligne, tiré au hasard quand la roue tombe sur Gage.')}</div>
+  ${ta('blind','Blind test','Une ligne par chanson, au format Titre — Artiste. La musique se lance depuis ton téléphone sur l\'enceinte.')}${ta('taupe','La Taupe','Un mot par ligne. La Taupe ne reçoit pas le mot.')}${ta('dessin','Dessine-moi','Un mot ou une expression à dessiner par ligne.')}</div>
   <h3>Anita ou pas Anita ?</h3><p class="muted">Ajoute les photos d'Anita et les leurres. Touche une photo pour choisir le détail de départ du zoom (le rond jaune). Les 20 photos déjà intégrées restent dans le jeu, celles ajoutées ici s'y ajoutent.</p>
   <label class="btn file" for="phin">+ Ajouter des photos<input id="phin" type="file" accept="image/*" multiple data-change="addPhotos"></label>
   <div class="phgrid">${PHOTOS.map(p=>`<div class="ph"><div class="thumb" data-focus="${p.id}"><img src="${p.data}" alt=""><span class="cross" style="left:${p.fx*100}%;top:${p.fy*100}%"></span></div>
@@ -883,7 +880,7 @@ VIEWS['dessin-play']=()=>{
 render=(r=>function(){r();if(view==='dessin-play')drawInit();})(render);
 
 /* ---------- La Roue des bonus ---------- */
-const WSEG=[{l:['+1'],k:'p1'},{l:['Gage'],k:'gage'},{l:['+2'],k:'p2'},{l:['Vol','de 2'],k:'vol'},{l:['+3'],k:'p3'},{l:['Raté'],k:'rien'},{l:['Cadeau'],k:'cadeau'},{l:['Jackpot','+5'],k:'p5'}];
+const WSEG=[{l:['+1'],k:'p1'},{l:['Points','×2'],k:'x2'},{l:['+2'],k:'p2'},{l:['Vol','de 2'],k:'vol'},{l:['+3'],k:'p3'},{l:['Raté'],k:'rien'},{l:['Cadeau'],k:'cadeau'},{l:['Jackpot','+5'],k:'p5'}];
 const WCOL=['#FFC93C','#FF4D6D','#19C99A','#6A5AE0'];
 function wheelSvg(){const n=WSEG.length,a=360/n,R=100;const P=(d,r)=>{const t=(d-90)*Math.PI/180;return (r*Math.cos(t)).toFixed(2)+' '+(r*Math.sin(t)).toFixed(2);};
   let h='',pegs='';WSEG.forEach((sg,i)=>{const c=i%4,two=sg.l.length>1;
@@ -896,11 +893,11 @@ VIEWS.roue=()=>{const res=V.res;
   <div class="stack card wheel-side"><p class="eyebrow">La Roue des bonus</p>
   ${res?`<img class="masc" style="width:130px;align-self:center" src="${M[res.m]}" alt=""><h2>${esc(res.title)}</h2><p style="font-size:18px">${esc(res.text)}</p><div class="row"><button class="btn" data-act="wheelReset">Une autre équipe</button><button class="ghost" data-act="go" data-arg="home">Accueil</button></div>`
        :`<h2>Quelle équipe tourne la roue ?</h2><div class="grid-names" style="grid-template-columns:repeat(2,minmax(0,1fr))">${[0,1,2,3].map(t=>`<button class="nbtn ${V.team===t?'sel':''}" style="--tc:var(--t${t})" data-act="wheelTeam" data-arg="${t}">${esc(teamName(t))}</button>`).join('')}</div><button class="btn big" data-act="wheelSpin" ${V.team==null?'disabled style="opacity:.4"':''}>Lancer la roue</button>
-       <p class="muted" style="font-size:14px"><b>Vol de 2</b> : prend 2 points à la meilleure équipe adverse. <b>Cadeau</b> : 1 point pour chacune des 3 autres équipes. <b>Gage</b> : un défi à relever, sans point.</p>`}
+       <p class="muted" style="font-size:14px"><b>Vol de 2</b> : prend 2 points à la meilleure équipe adverse. <b>Cadeau</b> : 1 point pour chacune des 3 autres équipes. <b>Points ×2</b> : tous les points gagnés au prochain jeu comptent double.</p>`}
   </div></div>`;};
 function wheelApply(i){const k=WSEG[i].k,t=V.team,tn=teamName(t),others=[0,1,2,3].filter(x=>x!==t);let r;
   if(k[0]==='p'){const n=Number(k[1]);addPts(t,n,'Roue des bonus');r={m:'joie',title:(n===5?'Jackpot ! ':'')+'+'+n+' pour '+tn,text:n===5?'Le gros lot de la roue.':'Des points tombés du ciel.'};if(n===5){sFanfare();confetti();}else sGood();}
-  else if(k==='gage'){const g=lines('gages');r={m:'oups',title:'Gage pour '+tn+' !',text:g.length?g[Math.floor(Math.random()*g.length)]:'Inventez un gage pour cette équipe.'};sBad();}
+  else if(k==='x2'){x2()[t]=1;save();r={m:'boxe',title:'Points doublés !',text:tn+' marquera double pendant tout son prochain jeu.'};sGood();}
   else if(k==='vol'){const v=others.slice().sort((a,b)=>S.scores[b]-S.scores[a])[0],n=Math.min(2,Math.max(0,S.scores[v]));if(n>0){addPts(v,-n,'Roue · volé par '+tn);addPts(t,n,'Roue · vol');}
     r={m:'taupe',title:n?'Vol de '+n+' point'+(n>1?'s':'')+' !':'Rien à voler',text:n?tn+' prend '+n+' point'+(n>1?'s':'')+' à '+teamName(v)+'.':teamName(v)+' n\'a aucun point à se faire voler.'};sGood();}
   else if(k==='cadeau'){others.forEach(x=>addPts(x,1,'Roue · cadeau de '+tn));r={m:'surprise',title:'Cadeau !',text:tn+' offre 1 point à chacune des 3 autres équipes.'};sBad();}
@@ -915,7 +912,7 @@ const ACT={
  setTeam:a=>{const [pi,t]=a.split(',').map(Number);S.team[pi]=t;save();render();},
  sc:a=>{const [t,d]=a.split(',').map(Number);addPts(t,d,'Correction manuelle');render();},
  scReset:()=>{V.confirm=true;render();}, scResetNo:()=>{V.confirm=false;render();},
- scResetYes:()=>{S.scores=[0,0,0,0];S.history=[];S.used={plus:[],duel:[],blind:[],taupe:[],photo:[]};save();V.confirm=false;render();toast('Scores remis à zéro');},
+ scResetYes:()=>{S.scores=[0,0,0,0];S.x2=[0,0,0,0];S.history=[];S.used={plus:[],duel:[],blind:[],taupe:[],photo:[]};save();V.confirm=false;render();toast('Scores remis à zéro');},
  resetUsed:()=>{S.used={plus:[],duel:[],blind:[],taupe:[],photo:[]};save();toast('Toutes les questions sont de nouveau disponibles');},
  phSet:async a=>{const [id,v]=a.split(',');const p=PHOTOS.find(x=>x.id===id);if(!p)return;p.anita=v==='1';await photoPut(p);render();},
  phDel:a=>{V.del=a;render();}, phDelNo:()=>{V.del=null;render();},
