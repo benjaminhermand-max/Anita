@@ -646,7 +646,7 @@ const GAMES=[
  {id:'duel',tint:'#CFF5E9',m:'boxe',name:'Le Duel',glyph:'VS',desc:'Face à face au buzzer, un champion par équipe.',who:'2 champions',left:()=>remaining('duel',duelItems())+' questions'},
  {id:'blind',tint:'#E3DEFF',m:'casque',name:'Blind test',glyph:'♪',desc:'Un buzzer par équipe, aux 4 coins de la tablette.',who:'4 équipes',left:()=>spReady()?remaining('blindsp',SP_TRACKS)+' titres Spotify':remaining('blind',blindItems())+' extraits'},
  {id:'photo',tint:'#FFEDB8',m:'loupe',name:'Anita ou pas Anita ?',glyph:'◎',desc:'Zoom sur un détail. Anita, ou une vache ?',who:'4 équipes',left:()=>remaining('photo',gamePhotos())+' photos'},
- {id:'taupe',tint:'#EFE4D2',m:'taupe',name:'La Taupe',glyph:'?!',desc:'Tout le monde a le même mot, sauf un.',who:'Les 12',left:()=>remaining('taupe',lines('taupe'))+' mots'},
+ {id:'taupe',tint:'#EFE4D2',m:'taupe',name:'La Taupe',glyph:'?!',desc:'Se joue sur le téléphone, on reporte les points ici.',who:'Les 12',left:()=>'Reporter les points'},
  {id:'kahoot',tint:'#FFDCE3',m:'kahoot',name:'Kahoot',glyph:'K',desc:'Chacun sur son téléphone, puis on reporte les points.',who:'Les 12',left:()=>'Podium → points'},
  {id:'dessin',tint:'#CFF5E9',m:'peintre',name:'Dessine-moi',desc:'Un joueur dessine, le premier qui trouve marque.',who:'Les 12',left:()=>remaining('dessin',lines('dessin'))+' mots'},
  {id:'roue',tint:'#FFF6DA',m:'roue',name:'La Roue des bonus',desc:'Entre deux jeux : points, vol, cadeau ou points doublés.',who:'1 équipe',left:()=>'8 cases'}
@@ -659,7 +659,7 @@ VIEWS.home=()=>{
   return `<header class="top"><div class="brand"><img class="masc-head" src="${M.salut}" alt=""><div class="stack" style="gap:4px;min-width:0"><p class="eyebrow">L'anniversaire en jeux · fil rouge</p><h1>Anita <span>Party</span></h1></div></div>
   <div class="row"><button class="ghost" data-act="go" data-arg="teams">Équipes</button><button class="ghost" data-act="go" data-arg="prep">Préparer</button><button class="ghost" data-act="go" data-arg="scores">Scores</button><button class="ghost" data-act="fs">Plein écran</button></div></header>
   <section class="board" aria-label="Scores des équipes">${[0,1,2,3].map(t=>`<button class="tcard ${t===3?'t3':''}" style="--tc:var(--t${t})" data-act="go" data-arg="scores"><span class="rk ${rank(t)===1?'first':''}">${rank(t)}${rank(t)===1?'re':'e'}</span><span class="tn">${esc(teamName(t))}</span><span class="ts">${S.scores[t]}${x2()[t]?'<span class="x2b">×2 au prochain jeu</span>':''}</span><span class="tm">${esc(members(t).join(' · ')||'Aucun joueur')}</span></button>`).join('')}</section>
-  <p class="eyebrow sec">Les jeux</p><section class="games">${GAMES.filter(g=>g.id!=='roue').map(g=>`<button class="tile" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}</section><p class="eyebrow sec">Entre deux jeux et pour finir</p><section class="specials">${GAMES.filter(g=>g.id==='roue').map(g=>`<button class="tile bonus" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}<button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 41 · 10 nov. 22h30</p>`;
+  <p class="eyebrow sec">Les jeux</p><section class="games">${GAMES.filter(g=>g.id!=='roue').map(g=>`<button class="tile" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}</section><p class="eyebrow sec">Entre deux jeux et pour finir</p><section class="specials">${GAMES.filter(g=>g.id==='roue').map(g=>`<button class="tile bonus" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}<button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 42 · 10 nov. 22h35</p>`;
 };
 
 VIEWS.teams=()=>`<div class="bar">${back()}<button class="btn" data-act="shuffleTeams">Tirage au sort des équipes</button></div>
@@ -678,7 +678,7 @@ VIEWS.prep=()=>{
   return `<div class="bar">${back()}<button class="ghost" data-act="resetUsed">Rejouer toutes les questions</button></div>
   <div class="stack"><h2>Préparer le contenu</h2><p class="muted">Tout est enregistré sur cette tablette au fur et à mesure. Le contenu actuel est un exemple à remplacer.</p>
   ${spPrepCard()}<div class="cols2">${ta('plus','Qui est le plus…','Une question par ligne.')}${ta('duel','Le Duel','Une ligne par question, au format Catégorie | Question | Réponse')}
-  ${ta('blind','Blind test','Une ligne par chanson, au format Titre — Artiste. La musique se lance depuis ton téléphone sur l\'enceinte.')}${ta('taupe','La Taupe','Un mot par ligne. La Taupe ne reçoit pas le mot.')}${ta('dessin','Dessine-moi','Un mot ou une expression à dessiner par ligne.')}</div>
+  ${ta('blind','Blind test','Une ligne par chanson, au format Titre — Artiste. La musique se lance depuis ton téléphone sur l\'enceinte.')}${ta('dessin','Dessine-moi','Un mot ou une expression à dessiner par ligne.')}</div>
   <h3>Anita ou pas Anita ?</h3><p class="muted">Ajoute les photos d'Anita et les leurres. Touche une photo pour choisir le détail de départ du zoom (le rond jaune). Les 20 photos déjà intégrées restent dans le jeu, celles ajoutées ici s'y ajoutent.</p>
   <label class="btn file" for="phin">+ Ajouter des photos<input id="phin" type="file" accept="image/*" multiple data-change="addPhotos"></label>
   <div class="phgrid">${PHOTOS.map(p=>`<div class="ph"><div class="thumb" data-focus="${p.id}"><img src="${p.data}" alt=""><span class="cross" style="left:${p.fx*100}%;top:${p.fy*100}%"></span></div>
@@ -795,22 +795,19 @@ VIEWS['photo-intro']=()=>`<div class="bar">${back()}</div><div class="center car
 
 /* La Taupe */
 VIEWS.taupe=()=>{
-  const sel=V.sel||active().map(p=>p.i);V.sel=sel;
-  if(!V.phase)return `<div class="bar">${back()}</div><div class="center card"><img class="masc" src="${M.taupe}" alt=""><p class="eyebrow">La Taupe</p><h2>Qui joue cette manche ?</h2><p class="muted" style="max-width:56ch">Tout le monde reçoit le même mot, sauf la Taupe. Chacun donne un indice à tour de rôle (20 s), puis on vote pour démasquer la Taupe.</p>
-   <div class="grid-names">${active().map(p=>`<button class="nbtn ${sel.includes(p.i)?'sel':'off'}" style="--tc:var(--t${S.team[p.i]})" data-act="taupeToggle" data-arg="${p.i}">${esc(p.n)}</button>`).join('')}</div>
-   <button class="btn big" data-act="taupeStart" ${sel.length>=3?'':'disabled style="opacity:.4"'}>Distribuer les mots (${sel.length} joueurs)</button></div>`;
-  const ord=V.order;
-  if(V.phase==='cover'){const pi=ord[V.k];return `<div class="bar">${back()}<span class="pill">${V.k+1} / ${ord.length}</span></div><div class="center cover"><p class="muted">Passe la tablette à</p><p class="who">${esc(pname(pi))}</p><button class="btn big" data-act="taupePeek">Voir mon mot</button></div>`;}
-  if(V.phase==='peek'){const pi=ord[V.k],mole=pi===V.mole;return `<div class="center cover"><p class="muted">${esc(pname(pi))}, ton mot est</p><p class="who" style="color:${mole?'var(--bad)':'var(--t3)'}">${mole?'Tu es la Taupe !':esc(V.word)}</p>${mole?'<p class="muted">Tu n\'as pas le mot. Écoute les autres et bluffe.</p>':''}<button class="btn big" data-act="taupeHide">J'ai vu, cacher</button></div>`;}
-  if(V.phase==='play'){const cur=ord[V.turn%ord.length];const s=V.left;return `<div class="bar">${back()}<span class="pill">Indices</span></div><div class="center card"><p class="muted">Au tour de</p><p class="qbig">${esc(pname(cur))}</p><p class="timer ${s<=5?'low':''}">${s}</p>
-   <div class="row" style="justify-content:center"><button class="btn" data-act="taupeTimer">${V.tick?'Joueur suivant':'Lancer le chrono'}</button><button class="ghost" data-act="taupeVote">Passer au vote</button></div><p class="muted">Ordre ${ord.map(i=>esc(pname(i))).join(' → ')}</p></div>`;}
-  if(V.phase==='vote')return `<div class="bar">${back()}</div><div class="center"><h2>Qui est la Taupe ?</h2><p class="muted">Mettez-vous d'accord, puis touchez le suspect.</p><div class="grid-names">${ord.map(i=>`<button class="nbtn" style="--tc:var(--t${S.team[i]})" data-act="taupeAccuse" data-arg="${i}">${esc(pname(i))}</button>`).join('')}</div></div>`;
-  if(V.phase==='reveal'){const caught=V.accused===V.mole;
-    return `<div class="bar">${back()}</div><div class="center card"><p class="muted">La Taupe était</p><p class="who" style="font-family:var(--fd);font-size:clamp(40px,8vw,72px);color:var(--bad)">${esc(pname(V.mole))}</p><p>Le mot était <b class="answer">${esc(V.word)}</b></p>
-    ${V.res?`<p class="qbig" style="font-size:28px">${esc(V.res)}</p><div class="row"><button class="btn" data-act="taupeAgain">Nouvelle manche</button><button class="ghost" data-act="go" data-arg="home">Accueil</button></div>`
-    :caught?`<p>Démasquée ! Dernière chance, la Taupe tente de deviner le mot.</p><div class="row"><button class="btn good" data-act="taupeEnd" data-arg="steal">Elle a trouvé le mot</button><button class="btn bad" data-act="taupeEnd" data-arg="caught">Raté</button></div>`
-    :`<p>Vous avez accusé ${esc(pname(V.accused))}. La Taupe s'en sort !</p><button class="btn" data-act="taupeEnd" data-arg="free">Valider les points</button>`}</div>`;}
-  return '';
+  const m=V.mole,last=V.last;
+  return `<div class="bar">${back()}</div><div class="center card" style="max-width:860px;margin:0 auto">
+  <img class="masc" style="width:64px" src="${M.taupe}" alt=""><p class="eyebrow">La Taupe</p><h2>Reporter les points de la manche</h2>
+  <p class="muted" style="max-width:58ch">La partie se joue sur le téléphone, avec l'appli La Taupe. À la fin de chaque manche, indique ici qui était la Taupe et comment ça s'est terminé.</p>
+  ${last?`<div class="gains">${last.map(g=>`<span class="gain" style="--tc:var(--t${g.t})">${esc(teamName(g.t))} +${g.n}</span>`).join('')}</div>`:''}
+  <h3>1. Qui était la Taupe ?</h3>
+  <div class="grid-names">${active().map(p=>`<button class="nbtn ${m===p.i?'sel':''}" style="--tc:var(--t${S.team[p.i]})" data-act="taupeMole" data-arg="${p.i}">${esc(p.n)}</button>`).join('')}</div>
+  <h3>2. Comment ça s'est terminé ?</h3>
+  <div class="row" style="justify-content:center;${m==null?'opacity:.4':''}">
+   <button class="btn good" data-act="taupeRes" data-arg="caught" ${m==null?'disabled':''}>Taupe démasquée · +2 aux autres équipes</button>
+   <button class="btn" data-act="taupeRes" data-arg="steal" ${m==null?'disabled':''}>Démasquée, mais elle a deviné le mot · +2 pour son équipe</button>
+   <button class="btn bad" data-act="taupeRes" data-arg="free" ${m==null?'disabled':''}>La Taupe s'en sort · +3 pour son équipe</button>
+  </div></div>`;
 };
 
 /* Kahoot */
@@ -1004,6 +1001,12 @@ const ACT={
    document.querySelectorAll('[data-act="wheelSpin"],[data-act="wheelTeam"]').forEach(b=>b.disabled=true);
    for(let k=0;k<26;k++)setTimeout(()=>{if(view==='roue')tone(700+Math.random()*200,.03,'square',0,.07);},4300*(1-Math.pow(1-k/26,2.4)));
    const me=V;setTimeout(()=>{if(V!==me||view!=='roue')return;V.rot=target%360;V.spinning=false;wheelApply(i);render();},4850);},
+ taupeMole:a=>{V.mole=Number(a);V.last=null;render();},
+ taupeRes:a=>{if(V.mole==null)return;const mt=S.team[V.mole],nm=pname(V.mole);let g=[];
+   if(a==='free'){addPts(mt,3,'La Taupe ('+nm+') s\'en sort');g=[{t:mt,n:3}];sBad();}
+   else if(a==='steal'){addPts(mt,2,'La Taupe ('+nm+') a deviné le mot');g=[{t:mt,n:2}];sBad();}
+   else{g=[0,1,2,3].filter(t=>t!==mt).map(t=>{addPts(t,2,'Taupe démasquée ('+nm+')');return {t,n:2};});sGood();react('joie');}
+   V.last=g;V.mole=null;toast('Points de la manche ajoutés');render();},
  kahootAdd:()=>{const ids=[1,2,3].map(r=>$('#k'+r).value);if(ids.some(v=>v==='')){toast('Choisis les trois places');return;}if(new Set(ids).size<3){toast('Trois joueurs différents, s\'il te plaît');return;}
    ids.forEach((v,k)=>addPts(S.team[Number(v)],3-k,'Kahoot · '+pname(Number(v))));sGood();toast('Points du Kahoot ajoutés');go('home');},
 
