@@ -156,6 +156,7 @@ textarea{min-height:180px;font-size:15px;line-height:1.5;resize:vertical}
 .c2 .qbig{font-size:clamp(20px,3.6vmin,34px)}
 .c2 .stack{gap:6px}
 #bz .judge .answer{color:var(--t3)}
+.judge .row{justify-content:center}
 .c2{gap:10px}
 .c2 .judge{padding:10px 16px;gap:8px}
 .c2 .judge .wn{font-size:clamp(20px,3.4vmin,30px)}
@@ -600,7 +601,7 @@ VIEWS.home=()=>{
   <div class="row"><button class="ghost" data-act="go" data-arg="teams">Équipes</button><button class="ghost" data-act="go" data-arg="prep">Préparer</button><button class="ghost" data-act="go" data-arg="scores">Scores</button><button class="ghost" data-act="fs">Plein écran</button></div></header>
   <section class="board" aria-label="Scores des équipes">${[0,1,2,3].map(t=>`<button class="tcard ${t===3?'t3':''}" style="--tc:var(--t${t})" data-act="go" data-arg="scores"><span class="rk ${rank(t)===1?'first':''}">${rank(t)}${rank(t)===1?'re':'e'}</span><span class="tn">${esc(teamName(t))}</span><span class="ts">${S.scores[t]}</span><span class="tm">${esc(members(t).join(' · ')||'Aucun joueur')}</span></button>`).join('')}</section>
   <section class="games">${GAMES.map(g=>`<button class="tile" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}
-  <button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 31 · 10 nov. 10h40</p>`;
+  <button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 32 · 10 nov. 10h45</p>`;
 };
 
 VIEWS.teams=()=>`<div class="bar">${back()}<button class="btn" data-act="shuffleTeams">Tirage au sort des équipes</button></div>
@@ -696,13 +697,13 @@ VIEWS.blind=()=>{
   const sp=isSpIt();
   const cd=(on,small)=>`<div class="cd ${on?'':'paused'} ${small?'small':''}" aria-hidden="true"><span></span></div>`;
   let mid;
-  if(b.winner!==null)mid=`<div class="judge" style="--tc:var(--t${b.winner})"><span class="wn">${esc(teamName(b.winner))} !</span><p class="muted">${sp?'La musique est en pause, écoute la réponse':'Coupe la musique et écoute la réponse'}</p><div class="row"><button class="btn good" data-act="blindGood" data-arg="1">Titre +1</button><button class="btn good" data-act="blindGood" data-arg="2">Titre et artiste +2</button><button class="btn bad" data-act="blindBad">Faux · +1 aux autres</button></div></div>`;
+  if(b.winner!==null)mid=`<div class="judge" style="--tc:var(--t${b.winner})"><span class="wn">${esc(teamName(b.winner))} !</span>${V.peek?`<p class="answer">${esc(it.t)}</p><p class="muted" style="margin-top:-8px">${esc(it.a)}</p>`:`<p class="muted">${sp?'La musique est en pause, écoute la réponse':'Coupe la musique et écoute la réponse'}</p>`}<div class="row"><button class="btn good" data-act="blindGood" data-arg="1">Titre +1</button><button class="btn good" data-act="blindGood" data-arg="2">Titre et artiste +2</button><button class="btn bad" data-act="blindBad">Faux · +1 aux autres</button><button class="ghost" data-act="blindPeek">${V.peek?'Masquer':'Voir'} la réponse</button></div></div>`;
   else if(V.show)mid=`${cd(true,true)}<p class="answer">${esc(it.t)}</p><p class="muted">${esc(it.a)}</p><button class="btn" data-act="blindNext">${V.n<5?'Extrait suivant':'Fin de la manche'}</button>`;
   else if(!b.armed)mid=`${cd(false)}<p class="muted" style="max-width:40ch">${sp?'Extrait n°'+V.n+' : un titre de la playlist part au hasard sur Spotify dès que tu touches le bouton.':'Prépare l\'extrait n°'+V.n+' sur ton téléphone, puis lance la musique et touche le bouton en même temps.'}</p><button class="btn big" data-act="blindArm">C'est parti !</button>`;
   else if(V.ended)mid=`${cd(false)}<p class="qbig">Extrait terminé</p><p class="muted">Vous pouvez encore buzzer.</p><button class="ghost" data-act="blindReveal">Personne ne trouve, révéler</button>`;
   else mid=`${cd(true)}<p class="qbig">Buzzez !</p><p class="bt-time ${clkLeft()<=5000?'low':''}" id="bt-time">${Math.ceil(clkLeft()/1000)} s</p><button class="ghost" data-act="blindReveal">Personne ne trouve, révéler</button>`;
   const spLine=spConnected()?`<p class="sp-line ${V.spErr?'err':''}">${esc(V.spMsg||(sp?'Spotify prêt · '+(SP.deviceName||'appareil actif'):'Spotify connecté mais playlist non chargée : mode manuel'))}</p>`:'';
-  return zones(4,[0,1,2,3])+`<div class="bcenter c4"><span class="pill">Blind test · extrait ${V.n} / 5</span>${mid}${spLine}${miniScores()}${b.armed&&!V.show&&b.winner===null?'':`<button class="ghost" data-act="blindReveal" ${V.show?'hidden':''}>Voir la réponse</button>`}</div><button class="ghost quit" data-act="go" data-arg="home">Quitter</button>`;
+  return zones(4,[0,1,2,3])+`<div class="bcenter c4"><span class="pill">Blind test · extrait ${V.n} / 5</span>${mid}${spLine}${miniScores()}</div><button class="ghost quit" data-act="go" data-arg="home">Quitter</button>`;
 };
 
 /* Anita ou pas Anita */
@@ -798,10 +799,11 @@ const ACT={
  duelAgain:()=>go('duel',{sel:V.teams.slice()}),
 
  blindArm:()=>{keepAwake();if(isSpIt())spPlay(V.it);V.bz.armed=true;V.left=EXTRAIT_MS;V.ended=false;clkStart();tone(880,.1,'sine');render();},
- blindGood:a=>{const w=V.bz.winner,n=Number(a);clkStop();V.ended=true;addPts(w,n,'Blind test');sGood();react('joie');if(isSpIt())spResume();V.show=true;V.bz.armed=false;V.bz.winner=null;render();},
- blindBad:()=>{const w=V.bz.winner;[0,1,2,3].filter(t=>t!==w).forEach(t=>addPts(t,1,'Blind test · erreur adverse'));toast('Les 3 autres équipes +1');react('oups');if(wrong()===0){clkStop();V.ended=true;V.show=true;V.bz.armed=false;if(isSpIt())spResume();}else if(!V.ended){if(isSpIt())spResume();clkStart();}render();},
+ blindGood:a=>{V.peek=false;const w=V.bz.winner,n=Number(a);clkStop();V.ended=true;addPts(w,n,'Blind test');sGood();react('joie');if(isSpIt())spResume();V.show=true;V.bz.armed=false;V.bz.winner=null;render();},
+ blindBad:()=>{V.peek=false;const w=V.bz.winner;[0,1,2,3].filter(t=>t!==w).forEach(t=>addPts(t,1,'Blind test · erreur adverse'));toast('Les 3 autres équipes +1');react('oups');if(wrong()===0){clkStop();V.ended=true;V.show=true;V.bz.armed=false;if(isSpIt())spResume();}else if(!V.ended){if(isSpIt())spResume();clkStart();}render();},
+ blindPeek:()=>{V.peek=!V.peek;render();},
  blindReveal:()=>{clkStop();V.ended=true;if(isSpIt())spResume();V.show=true;V.bz.armed=false;V.bz.winner=null;render();},
- blindNext:()=>{clkStop();if(V.n>=5){if(isSpIt())spPause();V.done=true;render();return;}if(isSpIt())spPause();V.it=pickBlind();V.n++;V.show=false;V.ended=false;V.left=EXTRAIT_MS;V.bz=newBz(false);render();},
+ blindNext:()=>{V.peek=false;clkStop();if(V.n>=5){if(isSpIt())spPause();V.done=true;render();return;}if(isSpIt())spPause();V.it=pickBlind();V.n++;V.show=false;V.ended=false;V.left=EXTRAIT_MS;V.bz=newBz(false);render();},
  blindAgain:()=>startBlind(),
 
  photoZoom:()=>{if(V.z<ZMAX)V.z++;tone(440+V.z*120,.12,'sine');render();},
