@@ -354,7 +354,40 @@ Montagne
 Pizza
 Cinéma
 Mariage`,
-dessin:`Un gâteau d'anniversaire
+dessin:`Un croissant
+Une glace
+Une montagne
+Un sapin de Noël
+Un bonhomme de neige
+Une vache
+Des lunettes de soleil
+La tour Eiffel
+Un voilier
+Un gâteau d'anniversaire
+Une valise
+Un cochon
+Une tente
+Un cocktail
+Une trottinette
+Un cheval
+Un barbecue
+Un télésiège
+Un feu d'artifice
+Une perruque
+Une raclette
+Une tartiflette
+Un karaoké
+Une grasse matinée`
+};
+const TEAM_DEF=['Framboise','Menthe','Citron','Myrtille'];
+function defaults(){
+  const players=['Anita','Benjamin'];for(let i=3;i<=12;i++)players.push('Invité '+i);
+  return {players,team:players.map((_,i)=>i%4),teamNames:TEAM_DEF.slice(),scores:[0,0,0,0],history:[],
+    content:Object.assign({},DEF),used:{plus:[],duel:[],blind:[],taupe:[],photo:[]}};
+}
+function load(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);const d=defaults();const s=Object.assign(d,o);s.content=Object.assign({},DEF,o.content||{});s.used=Object.assign(d.used,o.used||{});return s;}}catch(e){}return defaults();}
+let S=load();
+if(!S.dessinV2){if(String(S.content.dessin||'').trim()===`Un gâteau d'anniversaire
 Une tartiflette
 Un télésiège
 Une vache
@@ -377,16 +410,7 @@ Un barbecue
 Une tente
 Un karaoké
 Un feu d'artifice
-Une valise`
-};
-const TEAM_DEF=['Framboise','Menthe','Citron','Myrtille'];
-function defaults(){
-  const players=['Anita','Benjamin'];for(let i=3;i<=12;i++)players.push('Invité '+i);
-  return {players,team:players.map((_,i)=>i%4),teamNames:TEAM_DEF.slice(),scores:[0,0,0,0],history:[],
-    content:Object.assign({},DEF),used:{plus:[],duel:[],blind:[],taupe:[],photo:[]}};
-}
-function load(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);const d=defaults();const s=Object.assign(d,o);s.content=Object.assign({},DEF,o.content||{});s.used=Object.assign(d.used,o.used||{});return s;}}catch(e){}return defaults();}
-let S=load();
+Une valise`.trim())S.content.dessin=DEF.dessin;S.dessinV2=true;try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 const DUEL_ADD_V1=`Maths | Combien font 12 × 12 ? | 144
 Maths | Combien de côtés a un hexagone ? | 6
 Maths | Combien font 15 % de 200 ? | 30
@@ -659,7 +683,7 @@ VIEWS.home=()=>{
   return `<header class="top"><div class="brand"><img class="masc-head" src="${M.salut}" alt=""><div class="stack" style="gap:4px;min-width:0"><p class="eyebrow">L'anniversaire en jeux · fil rouge</p><h1>Anita <span>Party</span></h1></div></div>
   <div class="row"><button class="ghost" data-act="go" data-arg="teams">Équipes</button><button class="ghost" data-act="go" data-arg="prep">Préparer</button><button class="ghost" data-act="go" data-arg="scores">Scores</button><button class="ghost" data-act="fs">Plein écran</button></div></header>
   <section class="board" aria-label="Scores des équipes">${[0,1,2,3].map(t=>`<button class="tcard ${t===3?'t3':''}" style="--tc:var(--t${t})" data-act="go" data-arg="scores"><span class="rk ${rank(t)===1?'first':''}">${rank(t)}${rank(t)===1?'re':'e'}</span><span class="tn">${esc(teamName(t))}</span><span class="ts">${S.scores[t]}${x2()[t]?'<span class="x2b">×2 au prochain jeu</span>':''}</span><span class="tm">${esc(members(t).join(' · ')||'Aucun joueur')}</span></button>`).join('')}</section>
-  <p class="eyebrow sec">Les jeux</p><section class="games">${GAMES.filter(g=>g.id!=='roue').map(g=>`<button class="tile" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}</section><p class="eyebrow sec">Entre deux jeux et pour finir</p><section class="specials">${GAMES.filter(g=>g.id==='roue').map(g=>`<button class="tile bonus" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}<button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 43 · 10 nov. 22h40</p>`;
+  <p class="eyebrow sec">Les jeux</p><section class="games">${GAMES.filter(g=>g.id!=='roue').map(g=>`<button class="tile" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}</section><p class="eyebrow sec">Entre deux jeux et pour finir</p><section class="specials">${GAMES.filter(g=>g.id==='roue').map(g=>`<button class="tile bonus" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}<button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 44 · 10 nov. 22h45</p>`;
 };
 
 VIEWS.teams=()=>`<div class="bar">${back()}<button class="btn" data-act="shuffleTeams">Tirage au sort des équipes</button></div>
@@ -678,7 +702,7 @@ VIEWS.prep=()=>{
   return `<div class="bar">${back()}<button class="ghost" data-act="resetUsed">Rejouer toutes les questions</button></div>
   <div class="stack"><h2>Préparer le contenu</h2><p class="muted">Tout est enregistré sur cette tablette au fur et à mesure. Le contenu actuel est un exemple à remplacer.</p>
   ${spPrepCard()}<div class="cols2">${ta('plus','Qui est le plus…','Une question par ligne.')}${ta('duel','Le Duel','Une ligne par question, au format Catégorie | Question | Réponse')}
-  ${ta('blind','Blind test','Une ligne par chanson, au format Titre — Artiste. La musique se lance depuis ton téléphone sur l\'enceinte.')}${ta('dessin','Dessine-moi','Un mot ou une expression à dessiner par ligne.')}</div>
+  ${ta('blind','Blind test','Une ligne par chanson, au format Titre — Artiste. La musique se lance depuis ton téléphone sur l\'enceinte.')}${ta('dessin','Dessine-moi','Un mot ou une expression par ligne, rangés du plus facile (en haut) au plus difficile (en bas). Chacun des 8 dessins pioche dans sa tranche de la liste.')}</div>
   <h3>Anita ou pas Anita ?</h3><p class="muted">Ajoute les photos d'Anita et les leurres. Touche une photo pour choisir le détail de départ du zoom (le rond jaune). Les 20 photos déjà intégrées restent dans le jeu, celles ajoutées ici s'y ajoutent.</p>
   <label class="btn file" for="phin">+ Ajouter des photos<input id="phin" type="file" accept="image/*" multiple data-change="addPhotos"></label>
   <div class="phgrid">${PHOTOS.map(p=>`<div class="ph"><div class="thumb" data-focus="${p.id}"><img src="${p.data}" alt=""><span class="cross" style="left:${p.fx*100}%;top:${p.fy*100}%"></span></div>
@@ -827,10 +851,14 @@ VIEWS.finale=()=>{
 };
 
 /* ---------- Dessine-moi ---------- */
-const DRAW_MS=60000,DRAW_N=5;
+const DRAW_MS=60000,DRAW_N=8;
+// Les mots sont rangés du plus facile au plus difficile : le dessin n°k pioche dans la k-ième tranche de la liste.
+function drawWord(n){const all=lines('dessin'),L=all.length;if(!L)return '?';let a=Math.floor((n-1)*L/DRAW_N),b=Math.floor(n*L/DRAW_N);if(b<=a){a=Math.min(L-1,a);b=a+1;}
+  const tier=all.slice(a,b);if(!S.used.dessin)S.used.dessin=[];let pool=tier.filter(w=>!S.used.dessin.includes(w));if(!pool.length){S.used.dessin=S.used.dessin.filter(w=>!tier.includes(w));pool=tier;}
+  const w=pool[Math.floor(Math.random()*pool.length)];S.used.dessin.push(w);save();return w;}
 const DCOL=['#1C1433','#FF4D6D','#19C99A','#6A5AE0','#FF9F1C'];
 function drawPickPlayer(not){const a=active().filter(p=>p.i!==not);return a.length?a[Math.floor(Math.random()*a.length)].i:null;}
-function drawRound(drawer,n){return {phase:'secret',drawer,word:pick('dessin',lines('dessin')),n,strokes:[],col:0,left:DRAW_MS,runAt:null,penSeen:false,finder:null};}
+function drawRound(drawer,n){return {phase:'secret',drawer,word:drawWord(n),n,strokes:[],col:0,left:DRAW_MS,runAt:null,penSeen:false,finder:null};}
 function dLeft(){return Math.max(0,(V.left||0)-(V.runAt?Date.now()-V.runAt:0));}
 function dStop(){if(V.runAt){V.left=dLeft();V.runAt=null;}clearInterval(V.dclk);V.dclk=null;}
 function dStart(){if(V.runAt)return;V.runAt=Date.now();const me=V;clearInterval(V.dclk);
@@ -864,14 +892,14 @@ VIEWS.dessin=()=>`<div class="bar">${back()}</div><div class="center card" style
   <p><b>1.</b> Un joueur tiré au sort reçoit un <b>mot secret</b>. Pendant qu'il le regarde, <b>tous les autres ferment les yeux</b>, car la télé montre le même écran que la tablette.</p>
   <p><b>2.</b> Il a <b>60 secondes</b> pour le dessiner sur la tablette, au stylet ou au doigt. Interdit d'écrire des lettres ou de parler.</p>
   <p><b>3.</b> Tout le monde regarde la télé et crie ses idées. Le premier qui trouve fait gagner <b>1 point à son équipe</b>, et l'équipe du dessinateur gagne aussi <b>1 point</b>.</p>
-  <p><b>4.</b> Celui qui a trouvé <b>dessine le mot suivant</b>. Une manche = <b>${DRAW_N} dessins</b>.</p>
+  <p><b>4.</b> Celui qui a trouvé <b>dessine le mot suivant</b>. Une manche = <b>${DRAW_N} dessins</b>, avec des mots <b>de plus en plus difficiles</b>. Pas le droit de changer de mot.</p>
  </div>
  <button class="btn big" data-act="drawGo">Prêt ?</button></div>`;
 
 VIEWS['dessin-play']=()=>{
   const nm=esc(pname(V.drawer)),sec=Math.ceil(dLeft()/1000);let over='';
   if(V.done)over=`<div class="dover solid"><div class="judge" style="--tc:var(--gold)"><img class="masc" style="width:120px" src="${M.joie}" alt=""><span class="wn">Fin de la manche</span><p class="muted">${DRAW_N} dessins joués</p>${miniScores()}<div class="row"><button class="btn" data-act="drawAgain">Nouvelle manche</button><button class="ghost" data-act="go" data-arg="home">Accueil</button></div></div></div>`;
-  else if(V.phase==='secret')over=`<div class="dover solid"><div class="judge" style="--tc:var(--t${S.team[V.drawer]})"><p class="muted">Dessin ${V.n} / ${DRAW_N}</p><span class="wn">${nm} dessine</span><p class="muted" style="max-width:44ch">Tous les autres ferment les yeux ! Le mot s'affiche aussi sur la télé.</p><button class="btn" data-hold="word">Maintiens appuyé pour voir ton mot</button><p class="answer" id="secret-word">• • • • •</p><div class="row"><button class="btn good" data-act="drawStart">J'ai vu, je dessine</button><button class="ghost" data-act="drawOther">Changer de mot</button></div></div></div>`;
+  else if(V.phase==='secret')over=`<div class="dover solid"><div class="judge" style="--tc:var(--t${S.team[V.drawer]})"><p class="muted">Dessin ${V.n} / ${DRAW_N} · ${['très facile','facile','facile','moyen','moyen','difficile','difficile','très difficile'][Math.min(7,Math.floor((V.n-1)*8/DRAW_N))]}</p><span class="wn">${nm} dessine</span><p class="muted" style="max-width:44ch">Tous les autres ferment les yeux ! Le mot s'affiche aussi sur la télé.</p><button class="btn" data-hold="word">Maintiens appuyé pour voir ton mot</button><p class="answer" id="secret-word">• • • • •</p><div class="row"><button class="btn good" data-act="drawStart">J'ai vu, je dessine</button></div></div></div>`;
   else if(V.phase==='found')over=`<div class="dover"><div class="judge" style="--tc:var(--gold);max-width:760px"><span class="wn">Qui a trouvé ?</span><div class="grid-names">${active().filter(p=>p.i!==V.drawer).map(p=>`<button class="nbtn" style="--tc:var(--t${S.team[p.i]})" data-act="drawWho" data-arg="${p.i}">${esc(p.n)}</button>`).join('')}</div><button class="ghost" data-act="drawContinue">Fausse alerte, on continue</button></div></div>`;
   else if(V.phase==='result'){const f=V.finder;
     over=`<div class="dover"><div class="judge" style="--tc:var(--gold)"><p class="muted">Le mot était</p><p class="answer" style="font-size:clamp(28px,5vmin,48px)">${esc(V.word)}</p>${f!=null?`<span class="wn">Trouvé par ${esc(pname(f))} !</span><div class="gains"><span class="gain" style="--tc:var(--t${S.team[f]})">${esc(teamName(S.team[f]))} +1</span><span class="gain" style="--tc:var(--t${S.team[V.drawer]})">${esc(teamName(S.team[V.drawer]))} +1</span></div>`:`<span class="wn">Personne n'a trouvé</span>`}${V.n<DRAW_N?`<p class="muted">${f!=null?esc(pname(f))+' dessine le mot suivant.':'Un nouveau dessinateur est tiré au sort.'}</p>`:''}<div class="row"><button class="btn" data-act="drawNext">${V.n<DRAW_N?'Dessin suivant':'Fin de la manche'}</button><button class="ghost" data-act="go" data-arg="home">Quitter</button></div></div></div>`;}
@@ -983,7 +1011,6 @@ const ACT={
  spTest:async()=>{if(!spReady()){toast('Charge d\'abord la playlist');return;}const tr=SP_TRACKS[Math.floor(Math.random()*SP_TRACKS.length)];toast('Test : '+tr.t);V.spDiag='Test en cours…';render();try{await spStart(tr,30000);await new Promise(r=>setTimeout(r,2500));const st=await spState();V.spDiag=spDiagText(st)+(st&&st.is_playing?' ✓':' ✗');setTimeout(()=>spPause(),8000);}catch(e){spErr(e);V.spDiag='Erreur : '+e.message;}render();},
  spOut:()=>{SP.access=SP.refresh=null;SP_TRACKS=null;spSave();render();},
  drawGo:()=>{if(!lines('dessin').length){toast('Ajoute des mots dans Préparer');return;}keepAwake();go('dessin-play',drawRound(drawPickPlayer(null),1));},
- drawOther:()=>{V.word=pick('dessin',lines('dessin'));toast('Nouveau mot tiré');},
  drawStart:()=>{V.phase='draw';render();dStart();},
  drawCol:a=>{V.col=Number(a);render();},
  drawUndo:()=>{V.strokes.pop();drawAll();},
