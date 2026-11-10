@@ -99,6 +99,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .pod .blk{width:100%;border-radius:20px 20px 6px 6px;background:var(--gold);border:3px solid var(--ink);box-shadow:0 5px 0 var(--ink);display:flex;align-items:flex-start;justify-content:center;padding-top:10px;font-family:var(--fd);font-weight:800;font-size:36px;color:var(--ink);animation:rise .7s ease-out both}
 .pod:nth-child(1) .blk{background:var(--t1)}
 .pod:nth-child(3) .blk{background:var(--t0)}
+.pod.on{animation:pop .5s ease-out both}
+.pod.off .blk{background:var(--soft)!important;color:var(--muted);animation:none}
+.pod.off .nm{color:var(--muted)}
 .pod .nm{font-family:var(--fd);font-weight:800;font-size:22px;overflow-wrap:anywhere;text-align:center}
 .pod .vt{font-size:14px;color:var(--muted)}
 @keyframes rise{from{transform:scaleY(.1);transform-origin:bottom;opacity:.2}to{transform:scaleY(1);transform-origin:bottom;opacity:1}}
@@ -628,11 +631,16 @@ VIEWS.plus=()=>{
     return `<div class="bar">${back()}</div><div class="center card"><p class="eyebrow">Fin de la série</p><h2>Points gagnés</h2><div class="gains">${tot.map((g,t)=>`<span class="gain" style="--tc:var(--t${t})">${esc(teamName(t))} +${g}</span>`).join('')}</div><div class="row" style="justify-content:center"><button class="btn" data-act="plusNew">Nouvelle série</button><button class="ghost" data-act="go" data-arg="home">Retour à l'accueil</button></div></div>`;}
   const r=V.r,votes=V.votes[r],counts={};votes.forEach(v=>counts[v.to]=(counts[v.to]||0)+1);
   const ranked=Object.keys(counts).map(Number).sort((a,b)=>counts[b]-counts[a]);
-  const top=ranked.slice(0,3);const shown=[top[1],top[0],top[2]];const hts=[120,170,90];
+  const top=ranked.slice(0,3),k=top.length,step=V.step||0,done=step>=k;
+  const slots=[[1,120,2],[0,170,1],[2,90,3]]; // [rang, hauteur, place affichée]
+  const pods=slots.map(([ri,h,pl])=>{if(ri>=k)return '<div class="pod"></div>';const pi=top[ri],on=ri>=k-step;
+    return on?`<div class="pod on"><span class="nm">${esc(pname(pi))}</span><span class="vt">${counts[pi]} vote${counts[pi]>1?'s':''}</span><div class="blk" style="height:${h}px">${pl}</div></div>`
+             :`<div class="pod off"><span class="nm">?</span><span class="vt">&nbsp;</span><div class="blk" style="height:${h}px">${pl}</div></div>`;}).join('');
+  const nextLbl=['la 1re place','la 2e place','la 3e place'][k-step-1];
   return `<div class="bar">${back()}<span class="pill">Podium ${r+1} / ${nq}</span></div><div class="center"><p class="qbig">${esc(V.qs[r])}</p>
-  ${votes.length?`<div class="podium">${shown.map((pi,j)=>pi===undefined?'<div class="pod"></div>':`<div class="pod"><span class="nm">${esc(pname(pi))}</span><span class="vt">${counts[pi]} vote${counts[pi]>1?'s':''}</span><div class="blk" style="height:${hts[j]}px;animation-delay:${[.4,.9,0][j]}s">${[2,1,3][j]}</div></div>`).join('')}</div>`:'<p class="muted">Aucun vote</p>'}
-  <div class="gains">${V.gains[r].map((g,t)=>g?`<span class="gain" style="--tc:var(--t${t})">${esc(teamName(t))} +${g}</span>`:'').join('')||'<span class="muted">Aucun point cette fois</span>'}</div>
-  <div class="row" style="justify-content:center"><button class="btn" data-act="plusRevealNext">${r<nq-1?'Podium suivant':'Voir le bilan'}</button></div></div>`;
+  ${k?`<div class="podium">${pods}</div>`:'<p class="muted">Aucun vote</p>'}
+  ${done?`<div class="gains">${V.gains[r].map((g,t)=>g?`<span class="gain" style="--tc:var(--t${t})">${esc(teamName(t))} +${g}</span>`:'').join('')||'<span class="muted">Aucun point cette fois</span>'}</div>`:''}
+  <div class="row" style="justify-content:center">${done?`<button class="btn" data-act="plusRevealNext">${r<nq-1?'Podium suivant':'Voir le bilan'}</button>`:`<button class="btn big" data-act="plusStep">OK · révéler ${nextLbl}</button>`}</div></div>`;
 };
 
 /* Duel */
@@ -764,7 +772,11 @@ const ACT={
  plusPrev:()=>{if(V.qi>0)V.qi--;render();},
  plusReveal:()=>{V.gains=V.votes.map(vs=>{const g=[0,0,0,0];if(!vs.length)return g;const c={};vs.forEach(v=>c[v.to]=(c[v.to]||0)+1);const mx=Math.max(...Object.values(c));const win=Object.keys(c).filter(k=>c[k]===mx).map(Number);vs.forEach(v=>{if(win.includes(v.to))g[S.team[v.from]]++;});return g;});
    V.r=0;V.phase='reveal';V.paid=[];ACT._plusPay();},
- _plusPay:()=>{const r=V.r;if(!V.paid.includes(r)){V.paid.push(r);V.gains[r].forEach((g,t)=>addPts(t,g,'Qui est le plus…'));}sDrum();setTimeout(sGood,1100);render();},
+ _plusPay:()=>{V.step=0;render();},
+ plusStep:()=>{const r=V.r,vs=V.votes[r];const c={};vs.forEach(v=>c[v.to]=(c[v.to]||0)+1);const k=Math.min(3,Object.keys(c).length);
+   V.step=(V.step||0)+1;
+   if(V.step>=k){if(!V.paid.includes(r)){V.paid.push(r);V.gains[r].forEach((g,t)=>addPts(t,g,'Qui est le plus…'));}sFanfare();confetti();}else sDrum();
+   render();},
  plusRevealNext:()=>{if(V.r>=V.qs.length-1){V.phase='end';sFanfare();render();return;}V.r++;ACT._plusPay();},
 
  duelPick:a=>{const t=Number(a);V.sel=V.sel||[];if(V.sel.includes(t))V.sel=V.sel.filter(x=>x!==t);else{V.sel.push(t);if(V.sel.length>2)V.sel.shift();}render();},
