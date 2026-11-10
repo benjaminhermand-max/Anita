@@ -220,6 +220,7 @@ textarea{min-height:180px;font-size:15px;line-height:1.5;resize:vertical}
 #toast{visibility:hidden;position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(160%);background:var(--ink);color:#fff;font-weight:700;padding:12px 20px;border-radius:14px;z-index:90;transition:transform .25s;max-width:calc(100% - 32px);text-align:center}
 #toast.show{visibility:visible;transform:translateX(-50%) translateY(0)}
 .ver{margin-top:18px;text-align:center;font-size:12px;color:var(--muted)}
+.rules{display:flex;flex-direction:column;gap:10px;text-align:left;max-width:62ch;font-size:17px}
 .hist{font-size:14px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
 @media (max-width:640px){.board{grid-template-columns:repeat(2,minmax(0,1fr))}.tcard .ts{font-size:40px}.masc-head{width:70px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}#react.show{opacity:1;transform:translate(-50%,-50%)}}
@@ -601,7 +602,7 @@ VIEWS.home=()=>{
   <div class="row"><button class="ghost" data-act="go" data-arg="teams">Équipes</button><button class="ghost" data-act="go" data-arg="prep">Préparer</button><button class="ghost" data-act="go" data-arg="scores">Scores</button><button class="ghost" data-act="fs">Plein écran</button></div></header>
   <section class="board" aria-label="Scores des équipes">${[0,1,2,3].map(t=>`<button class="tcard ${t===3?'t3':''}" style="--tc:var(--t${t})" data-act="go" data-arg="scores"><span class="rk ${rank(t)===1?'first':''}">${rank(t)}${rank(t)===1?'re':'e'}</span><span class="tn">${esc(teamName(t))}</span><span class="ts">${S.scores[t]}</span><span class="tm">${esc(members(t).join(' · ')||'Aucun joueur')}</span></button>`).join('')}</section>
   <section class="games">${GAMES.map(g=>`<button class="tile" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}
-  <button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 32 · 10 nov. 10h45</p>`;
+  <button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 33 · 10 nov. 10h50</p>`;
 };
 
 VIEWS.teams=()=>`<div class="bar">${back()}<button class="btn" data-act="shuffleTeams">Tirage au sort des équipes</button></div>
@@ -723,6 +724,18 @@ VIEWS.photo=()=>{
    <div class="lvl" aria-hidden="true">${ZL.map((_,i)=>`<i class="${i<=lvl?'on':''}"></i>`).join('')}</div>${mid}${miniScores()}</div><button class="ghost quit" data-act="go" data-arg="home">Quitter</button>`;
 };
 
+/* Anita ou pas Anita : explication */
+VIEWS['photo-intro']=()=>`<div class="bar">${back()}</div><div class="center card" style="max-width:820px;margin:0 auto">
+ <img class="masc" style="width:110px" src="${M.loupe}" alt=""><p class="eyebrow">Anita ou pas Anita ?</p><h2>Qui se cache derrière ce détail ?</h2>
+ <div class="rules">
+  <p><b>1.</b> Une photo s'affiche, <b>très zoomée</b> sur un petit détail : un bout de tissu, une couleur, un décor…</p>
+  <p><b>2.</b> Chaque équipe a son <b>buzzer dans un coin</b> de la tablette. La première qui buzze répond : <b>Anita ou pas Anita ?</b> Et si ce n'est pas elle, qui ou quoi ?</p>
+  <p><b>3.</b> Bonne réponse tout de suite : <b>2 points</b>. Si personne ne trouve, on dézoome une fois et la photo ne vaut plus que <b>1 point</b>.</p>
+  <p><b>4.</b> Mauvaise réponse : les <b>3 autres équipes gagnent 1 point</b> chacune.</p>
+  <p><b>5.</b> Une manche = <b>3 photos</b>. Posez la tablette à plat au milieu de la table.</p>
+ </div>
+ <button class="btn big" data-act="photoGo">Prêt ?</button></div>`;
+
 /* La Taupe */
 VIEWS.taupe=()=>{
   const sel=V.sel||active().map(p=>p.i);V.sel=sel;
@@ -761,7 +774,7 @@ VIEWS.finale=()=>{
 
 /* ---------- Actions ---------- */
 const ACT={
- go:a=>{ if(a==='photo'){startPhoto();return;} if(a==='blind'){startBlind();return;} go(a); },
+ go:a=>{ if(a==='photo'){go('photo-intro');return;} if(a==='blind'){startBlind();return;} go(a); },
  fs:()=>{try{const d=document.documentElement;(d.requestFullscreen||d.webkitRequestFullscreen).call(d);}catch(e){toast('Plein écran indisponible ici');}},
  shuffleTeams:()=>{const ids=shuffle(active().map(p=>p.i));ids.forEach((pi,k)=>S.team[pi]=k%4);save();render();toast('Équipes tirées au sort');},
  setTeam:a=>{const [pi,t]=a.split(',').map(Number);S.team[pi]=t;save();render();},
@@ -811,6 +824,7 @@ const ACT={
  photoBad:()=>{const w=V.bz.winner;[0,1,2,3].filter(t=>t!==w).forEach(t=>addPts(t,1,'Anita ou pas · erreur adverse'));sBad();toast('Les 3 autres équipes +1');V.show=true;V.bz.armed=false;V.bz.winner=null;react('oups');render();},
  photoReveal:()=>{V.show=true;V.bz.armed=false;V.bz.winner=null;render();},
  photoNext:()=>{if(V.n>=3){V.done=true;render();return;}V.it=pick('photo',gamePhotos());V.n++;V.z=0;V.show=false;V.bz=newBz(true);render();},
+ photoGo:()=>startPhoto(),
  photoAgain:()=>startPhoto(),
 
  taupeToggle:a=>{const i=Number(a);V.sel=V.sel.includes(i)?V.sel.filter(x=>x!==i):V.sel.concat(i);render();},
