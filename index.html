@@ -914,7 +914,8 @@ const spOk=()=>/^https:/.test(location.protocol)&&!!(window.crypto&&crypto.subtl
 const spConnected=()=>!!(SP.refresh&&SP.clientId);
 const spReady=()=>spConnected()&&!!(SP_TRACKS&&SP_TRACKS.length);
 const b64url=buf=>btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-function spPid(){const p=String(SP.playlist||'').trim();const m=p.match(/playlist[\/:]([A-Za-z0-9]+)/);return m?m[1]:(/^[A-Za-z0-9]{10,}$/.test(p)?p:'');}
+function spPids(){const out=[];String(SP.playlist||'').split(/[\s,;]+/).forEach(p=>{p=p.trim();if(!p)return;const m=p.match(/playlist[\/:]([A-Za-z0-9]+)/);const id=m?m[1]:(/^[A-Za-z0-9]{10,}$/.test(p)?p:'');if(id&&!out.includes(id))out.push(id);});return out;}
+function spPid(){return spPids()[0]||'';}
 async function spLogin(){
   if(!spOk()){toast('Spotify ne marche que sur la version GitHub de l\'appli');return;}
   if(!SP.clientId){toast('Colle d\'abord l\'identifiant Client ID');return;}
@@ -949,14 +950,17 @@ async function spApi(path,opt){
   return j;
 }
 async function spLoadTracks(){
-  const id=spPid();if(!id||!spConnected())return;
+  const ids=spPids();if(!ids.length||!spConnected())return;
   spLoading=true;if(view==='prep')render();
   const grab=async base=>{let url=base+'?limit=100';const out=[];
     while(url){const j=await spApi(url);(j.items||[]).forEach(it=>{const t=it.track||it.item;if(t&&t.uri&&!t.is_local&&String(t.uri).startsWith('spotify:track'))out.push({raw:t.uri,t:t.name,a:(t.artists||[]).map(x=>x.name).join(', '),d:t.duration_ms||180000});});
       url=j.next?j.next.replace('https://api.spotify.com/v1',''):null;}
     return out;};
-  try{let out;try{out=await grab('/playlists/'+id+'/tracks');}catch(e){if(e.status===403||e.status===404)out=await grab('/playlists/'+id+'/items');else throw e;}
-    SP_TRACKS=out;toast(out.length+' titres chargés depuis Spotify');}
+  try{const all=[],seen=new Set();let nOk=0,errs=[];
+    for(const id of ids){let out;try{try{out=await grab('/playlists/'+id+'/tracks');}catch(e){if(e.status===403||e.status===404)out=await grab('/playlists/'+id+'/items');else throw e;}}catch(e){errs.push(e.message);continue;}
+      nOk++;out.forEach(t=>{if(!seen.has(t.raw)){seen.add(t.raw);t.pl=id;all.push(t);}});}
+    if(!nOk)throw new Error(errs[0]||'aucune playlist lisible');
+    SP_TRACKS=all;toast(all.length+' titres chargés depuis '+nOk+' playlist'+(nOk>1?'s':'')+(errs.length?' ('+errs.length+' en erreur)':''));}
   catch(e){SP_TRACKS=null;toast('Playlist Spotify : '+e.message);}
   spLoading=false;if(view==='prep'||view==='home')render();
 }
@@ -970,7 +974,7 @@ function spStatus(msg,err){if(view!=='blind')return;V.spMsg=msg;V.spErr=!!err;re
 async function spDevicesList(){const j=await spApi('/me/player/devices');return (j&&j.devices)||[];}
 async function spStart(tr,pos,mode){
   // Sur Android, lancer un titre seul (uris) est souvent ignoré : on lance la playlist en se plaçant sur le titre (context_uri + offset).
-  const pid=spPid();
+  const pid=tr.pl||spPid();
   const body=JSON.stringify((mode!=='uris'&&pid)?{context_uri:'spotify:playlist:'+pid,offset:{uri:tr.raw},position_ms:pos}:{uris:[tr.raw],position_ms:pos});
   try{await spApi('/me/player/play'+devQ(),{method:'PUT',body});return;}
   catch(e){
@@ -1016,7 +1020,7 @@ function spPrepCard(){
   return `<div class="card stack"><h3>Spotify pour le blind test</h3>
   <p class="muted">Avec un compte Premium, l'appli lance un titre au hasard de la playlist, coupe la musique dès qu'une équipe buzze et affiche la réponse toute seule.</p>
   <div class="cols2"><label class="f">Identifiant de l'appli Spotify (Client ID)<input type="text" id="sp-cid" data-input="sp" data-arg="clientId" value="${esc(SP.clientId||'')}" autocomplete="off"></label>
-  <label class="f">Lien de la playlist<input type="text" id="sp-pl" data-input="sp" data-arg="playlist" value="${esc(SP.playlist||'')}" placeholder="https://open.spotify.com/playlist/…"></label></div>
+  <label class="f">Liens des playlists (un par ligne)<textarea id="sp-pl" rows="3" style="min-height:96px" data-input="sp" data-arg="playlist" placeholder="https://open.spotify.com/playlist/…&#10;https://open.spotify.com/playlist/…">${esc(SP.playlist||'')}</textarea></label></div>
   <p class="hint">Adresse de retour à déclarer dans l'appli Spotify (Redirect URI) : <b style="user-select:all">${esc(SP_REDIR())}</b></p>
   <div class="row">${spConnected()?`<button class="ghost" data-act="spReload">Charger la playlist</button><button class="ghost" data-act="spDevs">Choisir l'appareil</button><button class="ghost" data-act="spTest">Tester le son</button><button class="ghost" data-act="spOut">Déconnecter</button>`:`<button class="btn" data-act="spLogin">Se connecter à Spotify</button>`}</div>
   ${devs}<p><b>${st}</b></p>${V.spDiag?`<p style="font-size:15px">${esc(V.spDiag)}</p>`:''}</div>`;
@@ -1041,7 +1045,7 @@ VIEWS.home=()=>{
   return `<header class="top"><div class="brand"><img class="masc-head" src="${M.salut}" alt=""><div class="stack" style="gap:4px;min-width:0"><p class="eyebrow">L'anniversaire en jeux · fil rouge</p><h1>Anita <span>Party</span></h1></div></div>
   <div class="row"><button class="ghost" data-act="go" data-arg="teams">Équipes</button><button class="ghost" data-act="go" data-arg="prep">Préparer</button><button class="ghost" data-act="go" data-arg="scores">Scores</button><button class="ghost" data-act="fs">Plein écran</button></div></header>
   <section class="board" aria-label="Scores des équipes">${[0,1,2,3].map(t=>`<button class="tcard ${t===3?'t3':''}" style="--tc:var(--t${t})" data-act="go" data-arg="scores"><span class="rk ${rank(t)===1?'first':''}">${rank(t)}${rank(t)===1?'re':'e'}</span><span class="tn">${esc(teamName(t))}</span><span class="ts">${S.scores[t]}${x2()[t]?'<span class="x2b">×2 au prochain jeu</span>':''}</span><span class="tm">${esc(members(t).join(' · ')||'Aucun joueur')}</span></button>`).join('')}</section>
-  <p class="eyebrow sec">Les jeux</p><section class="games">${GAMES.filter(g=>g.id!=='roue').map(g=>`<button class="tile" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}</section><p class="eyebrow sec">Entre deux jeux et pour finir</p><section class="specials">${GAMES.filter(g=>g.id==='roue').map(g=>`<button class="tile bonus" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}<button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 61 · 22 nov. 12h30</p>`;
+  <p class="eyebrow sec">Les jeux</p><section class="games">${GAMES.filter(g=>g.id!=='roue').map(g=>`<button class="tile" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}</section><p class="eyebrow sec">Entre deux jeux et pour finir</p><section class="specials">${GAMES.filter(g=>g.id==='roue').map(g=>`<button class="tile bonus" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}<button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 62 · 22 nov. 12h45</p>`;
 };
 
 VIEWS.teams=()=>`<div class="bar">${back()}<button class="btn" data-act="shuffleTeams">Tirage au sort des équipes</button></div>
