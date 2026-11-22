@@ -316,7 +316,49 @@ Qui pleure devant un dessin animé ?
 Qui serait le premier éliminé d'une émission de survie ?
 Qui est le plus fêtard ?
 Qui est le plus râleur ?
-Qui deviendra célèbre en premier ?`,
+Qui deviendra célèbre en premier ?
+Qui est le plus susceptible de se perdre avec un GPS ?
+Qui est le plus bavard ?
+Qui est le plus gros dormeur ?
+Qui est le plus maniaque du rangement ?
+Qui est le plus accro à son téléphone ?
+Qui est le plus mauvais perdant ?
+Qui est le plus susceptible d'oublier un anniversaire ?
+Qui danse le mieux ?
+Qui est le plus frileux ?
+Qui est le plus aventurier ?
+Qui finit toujours les assiettes des autres ?
+Qui a le plus de chances de partir vivre à l'étranger ?
+Qui est le plus souvent en retard ?
+Qui est le plus drôle sans le faire exprès ?
+Qui est le plus fan de séries ?
+Qui ferait le meilleur maître d'école ?
+Qui est le plus sportif ?
+Qui est le plus dépensier ?
+Qui ferait le meilleur détective ?
+Qui ferait le meilleur candidat de télé-réalité ?
+Qui a le rire le plus contagieux ?
+Qui est le plus têtu ?
+Qui est le plus généreux ?
+Qui se lèverait à 5 h du matin pour une randonnée ?
+Qui prend le plus de photos ?
+Qui est le plus distrait ?
+Qui est le plus fort aux jeux de société ?
+Qui parle le plus à ses animaux ?
+Qui a le meilleur sens de l'orientation ?
+Qui est le plus romantique ?
+Qui met le plus de temps à se préparer ?
+Qui survivrait le plus longtemps dans un film d'horreur ?
+Qui gagnerait au loto et perdrait le ticket ?
+Qui chante le mieux ?
+Qui est le roi ou la reine du barbecue ?
+Qui est le plus fan de Noël ?
+Qui ferait le meilleur espion ?
+Qui pleure le plus à un mariage ?
+Qui a le plus de mauvaise foi ?
+Qui est le plus zen ?
+Qui raconte les meilleures histoires ?
+Qui deviendrait un influenceur à succès ?`,
 duel:`Maths | Combien font 7 × 8 ? | 56
 Maths | Combien de minutes dans 3 heures ? | 180
 Maths | Quelle est la moitié de 250 ? | 125
@@ -440,27 +482,107 @@ Mariage`,
 dessin:`Un croissant
 Une glace
 Une montagne
+Un soleil
+Une maison
+Un arbre
+Une pomme
+Un poisson
+Une fleur
+Un ballon
+Une étoile
+Une voiture
+Un chat
 Un sapin de Noël
 Un bonhomme de neige
 Une vache
+Un bateau
+Un parapluie
+Une banane
+Un escargot
+Un avion
+Une fusée
+Une guitare
+Un serpent
+Une clé
+Un oiseau
 Des lunettes de soleil
 La tour Eiffel
 Un voilier
+Un château
+Une araignée
+Un dinosaure
+Une sorcière
+Un robot
+Un pingouin
+Un hamburger
+Une pizza
+Un vélo
+Un arrosoir
 Un gâteau d'anniversaire
 Une valise
 Un cochon
+Un pirate
+Une sirène
+Un fantôme
+Une licorne
+Un phare
+Un igloo
+Une baleine
+Un kangourou
+Un hélicoptère
+Un vampire
 Une tente
 Un cocktail
 Une trottinette
+Un pompier
+Un skieur
+Un arc-en-ciel
+Un volcan
+Une pyramide
+Un cowboy
+Une montgolfière
+Un parachute
+Un astronaute
+Une piscine
 Un cheval
 Un barbecue
 Un télésiège
+Un embouteillage
+Une fondue savoyarde
+Un mariage
+Un dentiste
+Une tempête
+Un selfie
+Une panne d'électricité
+Un pique-nique
+Un orchestre
+Une course de chevaux
 Un feu d'artifice
 Une perruque
 Une raclette
+Une fête surprise
+Le Wi-Fi
+Un rhume
+Le réveil du lundi matin
+Une file d'attente
+Un tremblement de terre
+Une bataille de boules de neige
+Un coup de soleil
+Les soldes
+Un déménagement
 Une tartiflette
 Un karaoké
-Une grasse matinée`
+Une grasse matinée
+La gravité
+Un rêve
+Le temps qui passe
+Un mal de tête
+L'écho
+Une rumeur
+Le décalage horaire
+Une éclipse
+La nostalgie
+Un fou rire`
 };
 const TEAM_DEF=['Framboise','Menthe','Citron','Myrtille'];
 function defaults(){
@@ -494,6 +616,56 @@ Une tente
 Un karaoké
 Un feu d'artifice
 Une valise`.trim())S.content.dessin=DEF.dessin;S.dessinV2=true;try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+const PLUS_ADD_V2=`Qui est le plus susceptible de se perdre avec un GPS ?
+Qui est le plus bavard ?
+Qui est le plus gros dormeur ?
+Qui est le plus maniaque du rangement ?
+Qui est le plus accro à son téléphone ?
+Qui est le plus mauvais perdant ?
+Qui est le plus susceptible d'oublier un anniversaire ?
+Qui danse le mieux ?
+Qui est le plus frileux ?
+Qui est le plus aventurier ?
+Qui finit toujours les assiettes des autres ?
+Qui a le plus de chances de partir vivre à l'étranger ?
+Qui est le plus souvent en retard ?
+Qui est le plus drôle sans le faire exprès ?
+Qui est le plus fan de séries ?
+Qui ferait le meilleur maître d'école ?
+Qui est le plus sportif ?
+Qui est le plus dépensier ?
+Qui ferait le meilleur détective ?
+Qui ferait le meilleur candidat de télé-réalité ?
+Qui a le rire le plus contagieux ?
+Qui est le plus têtu ?
+Qui est le plus généreux ?
+Qui se lèverait à 5 h du matin pour une randonnée ?
+Qui prend le plus de photos ?
+Qui est le plus distrait ?
+Qui est le plus fort aux jeux de société ?
+Qui parle le plus à ses animaux ?
+Qui a le meilleur sens de l'orientation ?
+Qui est le plus romantique ?
+Qui met le plus de temps à se préparer ?
+Qui survivrait le plus longtemps dans un film d'horreur ?
+Qui gagnerait au loto et perdrait le ticket ?
+Qui chante le mieux ?
+Qui est le roi ou la reine du barbecue ?
+Qui est le plus fan de Noël ?
+Qui ferait le meilleur espion ?
+Qui pleure le plus à un mariage ?
+Qui a le plus de mauvaise foi ?
+Qui est le plus zen ?
+Qui raconte les meilleures histoires ?
+Qui deviendrait un influenceur à succès ?`;
+const DESSIN_LV={"Un croissant": 1, "Une glace": 1, "Une montagne": 1, "Un sapin de Noël": 2, "Un bonhomme de neige": 2, "Une vache": 2, "Des lunettes de soleil": 3, "La tour Eiffel": 3, "Un voilier": 3, "Un gâteau d'anniversaire": 4, "Une valise": 4, "Un cochon": 4, "Une tente": 5, "Un cocktail": 5, "Une trottinette": 5, "Un cheval": 6, "Un barbecue": 6, "Un télésiège": 6, "Un feu d'artifice": 7, "Une perruque": 7, "Une raclette": 7, "Une tartiflette": 8, "Un karaoké": 8, "Une grasse matinée": 8, "Un soleil": 1, "Une maison": 1, "Un arbre": 1, "Une pomme": 1, "Un poisson": 1, "Une fleur": 1, "Un ballon": 1, "Une étoile": 1, "Une voiture": 1, "Un chat": 1, "Un bateau": 2, "Un parapluie": 2, "Une banane": 2, "Un escargot": 2, "Un avion": 2, "Une fusée": 2, "Une guitare": 2, "Un serpent": 2, "Une clé": 2, "Un oiseau": 2, "Un château": 3, "Une araignée": 3, "Un dinosaure": 3, "Une sorcière": 3, "Un robot": 3, "Un pingouin": 3, "Un hamburger": 3, "Une pizza": 3, "Un vélo": 3, "Un arrosoir": 3, "Un pirate": 4, "Une sirène": 4, "Un fantôme": 4, "Une licorne": 4, "Un phare": 4, "Un igloo": 4, "Une baleine": 4, "Un kangourou": 4, "Un hélicoptère": 4, "Un vampire": 4, "Un pompier": 5, "Un skieur": 5, "Un arc-en-ciel": 5, "Un volcan": 5, "Une pyramide": 5, "Un cowboy": 5, "Une montgolfière": 5, "Un parachute": 5, "Un astronaute": 5, "Une piscine": 5, "Un embouteillage": 6, "Une fondue savoyarde": 6, "Un mariage": 6, "Un dentiste": 6, "Une tempête": 6, "Un selfie": 6, "Une panne d'électricité": 6, "Un pique-nique": 6, "Un orchestre": 6, "Une course de chevaux": 6, "Une fête surprise": 7, "Le Wi-Fi": 7, "Un rhume": 7, "Le réveil du lundi matin": 7, "Une file d'attente": 7, "Un tremblement de terre": 7, "Une bataille de boules de neige": 7, "Un coup de soleil": 7, "Les soldes": 7, "Un déménagement": 7, "La gravité": 8, "Un rêve": 8, "Le temps qui passe": 8, "Un mal de tête": 8, "L'écho": 8, "Une rumeur": 8, "Le décalage horaire": 8, "Une éclipse": 8, "La nostalgie": 8, "Un fou rire": 8};
+if(!S.purge1){const L=k=>String(S.content[k]||'').split('\n').map(x=>x.trim()).filter(Boolean);const usedDessin=(S.used.dessin||[]).slice();const clean=(k,key)=>{const used=new Set((S.used[k]||[]).map(x=>String(x).trim()));S.content[k]=L(k).filter(l=>!used.has(l)).join('\n');S.used[k]=[];};
+  clean('plus');clean('duel');clean('dessin');
+  const hp=new Set(L('plus'));S.content.plus=L('plus').concat(PLUS_ADD_V2.split('\n').filter(l=>!hp.has(l))).join('\n');
+  const usedD=new Set(usedDessin);const cur=L('dessin');const hd=new Set(cur);
+  const all=cur.concat(Object.keys(DESSIN_LV).filter(w=>!hd.has(w)&&!usedD.has(w)));
+  S.content.dessin=all.map((w,i)=>({w,i,l:DESSIN_LV[w]??4.5})).sort((a,b)=>a.l-b.l||a.i-b.i).map(x=>x.w).join('\n');
+  S.purge1=true;try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 const DUEL_ADD_V2=`Maths | Combien font 25 × 4 ? | 100
 Maths | Combien d'arêtes a un cube ? | 12
 Maths | Combien de jours compte une année bissextile ? | 366
@@ -596,7 +768,9 @@ function pick(kind,arr){
   const k=x=>typeof x==='string'?x:(x.raw||x.id);
   let pool=arr.filter(x=>!S.used[kind].includes(k(x)));
   if(!pool.length){S.used[kind]=[];pool=arr.slice();toast('Tout a été joué, on repart du début');}
-  const it=pool[Math.floor(Math.random()*pool.length)];S.used[kind].push(k(it));save();return it;
+  const it=pool[Math.floor(Math.random()*pool.length)];S.used[kind].push(k(it));
+  if(kind==='plus'||kind==='duel'){const key=String(k(it)).trim();S.content[kind]=lines(kind).filter(l=>l!==key).join('\n');}
+  save();return it;
 }
 function remaining(kind,arr){const k=x=>typeof x==='string'?x:(x.raw||x.id);const u=S.used[kind]||[];return arr.filter(x=>!u.includes(k(x))).length;}
 const active=()=>S.players.map((n,i)=>({n:n.trim(),i})).filter(p=>p.n);
@@ -820,7 +994,7 @@ VIEWS.home=()=>{
   return `<header class="top"><div class="brand"><img class="masc-head" src="${M.salut}" alt=""><div class="stack" style="gap:4px;min-width:0"><p class="eyebrow">L'anniversaire en jeux · fil rouge</p><h1>Anita <span>Party</span></h1></div></div>
   <div class="row"><button class="ghost" data-act="go" data-arg="teams">Équipes</button><button class="ghost" data-act="go" data-arg="prep">Préparer</button><button class="ghost" data-act="go" data-arg="scores">Scores</button><button class="ghost" data-act="fs">Plein écran</button></div></header>
   <section class="board" aria-label="Scores des équipes">${[0,1,2,3].map(t=>`<button class="tcard ${t===3?'t3':''}" style="--tc:var(--t${t})" data-act="go" data-arg="scores"><span class="rk ${rank(t)===1?'first':''}">${rank(t)}${rank(t)===1?'re':'e'}</span><span class="tn">${esc(teamName(t))}</span><span class="ts">${S.scores[t]}${x2()[t]?'<span class="x2b">×2 au prochain jeu</span>':''}</span><span class="tm">${esc(members(t).join(' · ')||'Aucun joueur')}</span></button>`).join('')}</section>
-  <p class="eyebrow sec">Les jeux</p><section class="games">${GAMES.filter(g=>g.id!=='roue').map(g=>`<button class="tile" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}</section><p class="eyebrow sec">Entre deux jeux et pour finir</p><section class="specials">${GAMES.filter(g=>g.id==='roue').map(g=>`<button class="tile bonus" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}<button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 54 · 22 nov. 10h45</p>`;
+  <p class="eyebrow sec">Les jeux</p><section class="games">${GAMES.filter(g=>g.id!=='roue').map(g=>`<button class="tile" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}</section><p class="eyebrow sec">Entre deux jeux et pour finir</p><section class="specials">${GAMES.filter(g=>g.id==='roue').map(g=>`<button class="tile bonus" style="--tint:${g.tint}" data-act="go" data-arg="${g.id}"><span class="tile-txt"><h3>${esc(g.name)}</h3><p class="muted">${esc(g.desc)}</p><span class="meta"><span class="chip">${g.who}</span><span class="chip">${esc(g.left())}</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M[g.m]}" alt=""></span></button>`).join('')}<button class="tile final" style="--tint:rgba(255,201,60,.22)" data-act="go" data-arg="finale"><span class="tile-txt"><h3>Podium & trophée</h3><p>À lancer en fin de journée, on révèle le classement de la 4e à la 1re place.</p><span class="meta"><span class="chip">Grande finale</span></span></span><span class="tile-art" aria-hidden="true"><img src="${M.trophee}" alt=""></span></button></section><p class="ver">Version 55 · 22 nov. 11h00</p>`;
 };
 
 VIEWS.teams=()=>`<div class="bar">${back()}<button class="btn" data-act="shuffleTeams">Tirage au sort des équipes</button></div>
@@ -837,8 +1011,8 @@ VIEWS.scores=()=>`<div class="bar">${back()}</div><div class="stack"><h2>Scores<
 VIEWS.prep=()=>{
   const ta=(k,title,hint)=>`<label class="f">${title}<span class="hint">${hint}</span><textarea id="ta-${k}" data-input="content" data-arg="${k}">${esc(S.content[k])}</textarea></label>`;
   return `<div class="bar">${back()}<button class="ghost" data-act="resetUsed">Rejouer toutes les questions</button></div>
-  <div class="stack"><h2>Préparer le contenu</h2><p class="muted">Tout est enregistré sur cette tablette au fur et à mesure. Le contenu actuel est un exemple à remplacer.</p>
-  ${spPrepCard()}<div class="cols2">${ta('plus','Qui est le plus…','Une question par ligne.')}<div class="stack" style="gap:8px">${ta('duel','Le Duel','Une ligne par question, au format Catégorie | Question | Réponse')}<button class="ghost" style="align-self:flex-start" data-act="duelPurge">Supprimer les ${(S.used.duel||[]).length} questions déjà jouées</button></div>
+  <div class="stack"><h2>Préparer le contenu</h2><p class="muted">Tout est enregistré sur cette tablette au fur et à mesure. Les questions de Qui est le plus… et du Duel, et les mots de Dessine-moi, sont supprimés de la liste dès qu'ils sont joués : ils ne reviennent jamais. Le contenu actuel est un exemple à remplacer.</p>
+  ${spPrepCard()}<div class="cols2">${ta('plus','Qui est le plus…','Une question par ligne.')}<div class="stack" style="gap:8px">${ta('duel','Le Duel','Une ligne par question, au format Catégorie | Question | Réponse')}</div>
   ${ta('blind','Blind test','Une ligne par chanson, au format Titre — Artiste. La musique se lance depuis ton téléphone sur l\'enceinte.')}${ta('dessin','Dessine-moi','Un mot ou une expression par ligne, rangés du plus facile (en haut) au plus difficile (en bas). Chacun des 8 dessins pioche dans sa tranche de la liste.')}</div>
   <h3>Anita ou pas Anita ?</h3><p class="muted">Ajoute les photos d'Anita et les leurres. Touche une photo pour choisir le détail de départ du zoom (le rond jaune). Les 20 photos déjà intégrées restent dans le jeu, celles ajoutées ici s'y ajoutent.</p>
   <label class="btn file" for="phin">+ Ajouter des photos<input id="phin" type="file" accept="image/*" multiple data-change="addPhotos"></label>
@@ -1008,7 +1182,7 @@ const drawMs=n=>n>=6?DRAW_HARD_MS:DRAW_MS; // les 3 derniers dessins (difficiles
 // Les mots sont rangés du plus facile au plus difficile : le dessin n°k pioche dans la k-ième tranche de la liste.
 function drawWord(n){const all=lines('dessin'),L=all.length;if(!L)return '?';let a=Math.floor((n-1)*L/DRAW_N),b=Math.floor(n*L/DRAW_N);if(b<=a){a=Math.min(L-1,a);b=a+1;}
   const tier=all.slice(a,b);if(!S.used.dessin)S.used.dessin=[];let pool=tier.filter(w=>!S.used.dessin.includes(w));if(!pool.length){S.used.dessin=S.used.dessin.filter(w=>!tier.includes(w));pool=tier;}
-  const w=pool[Math.floor(Math.random()*pool.length)];S.used.dessin.push(w);save();return w;}
+  const w=pool[Math.floor(Math.random()*pool.length)];S.content.dessin=all.filter(x=>x!==w).join('\n');save();return w;}
 const DCOL=['#1C1433','#FF4D6D','#19C99A','#6A5AE0','#FF9F1C'];
 function drawPickPlayer(not){const a=active().filter(p=>p.i!==not);return a.length?a[Math.floor(Math.random()*a.length)].i:null;}
 function drawRound(drawer,n,gallery){return {gallery:gallery||[],phase:'secret',drawer,word:drawWord(n),n,strokes:[],col:0,size:1,left:drawMs(n),runAt:null,penSeen:false,finder:null};}
@@ -1176,7 +1350,7 @@ const ACT={
  spDev:a=>{const d=(V.devs||[]).find(x=>x.id===a);SP.deviceId=a;SP.deviceName=d?d.name:'';spSave();render();toast('Musique sur : '+(SP.deviceName||'appareil choisi'));},
  spTest:async()=>{if(!spReady()){toast('Charge d\'abord la playlist');return;}const tr=SP_TRACKS[Math.floor(Math.random()*SP_TRACKS.length)];toast('Test : '+tr.t);V.spDiag='Test en cours…';render();try{await spStart(tr,30000);await new Promise(r=>setTimeout(r,2500));const st=await spState();V.spDiag=spDiagText(st)+(st&&st.is_playing?' ✓':' ✗');setTimeout(()=>spPause(),8000);}catch(e){spErr(e);V.spDiag='Erreur : '+e.message;}render();},
  spOut:()=>{SP.access=SP.refresh=null;SP_TRACKS=null;spSave();render();},
- drawGo:()=>{if(!lines('dessin').length){toast('Ajoute des mots dans Préparer');return;}keepAwake();go('dessin-play',drawRound(drawPickPlayer(null),1));},
+ drawGo:()=>{if(lines('dessin').length<DRAW_N){toast('Il faut au moins '+DRAW_N+' mots dans Préparer');return;}keepAwake();go('dessin-play',drawRound(drawPickPlayer(null),1));},
  drawStart:()=>{V.phase='draw';render();dStart();},
  drawCol:a=>{V.col=Number(a);render();},
  drawSize:a=>{V.size=Number(a);render();},
